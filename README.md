@@ -1,11 +1,11 @@
 # @preact/preset-vite
 
-An all in one preset for writing Preact apps with the vite bundler.
+An all in one preset for writing Preact apps with the [vite](https://github.com/vitejs/vite) bundler.
 
 Features:
 
-- ↻ Sets up Hot Module Replacement via [prefresh](https://github.com/JoviDeCroock/prefresh/tree/main/packages/vite)
-- 🔧 Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development 
+- Sets up Hot Module Replacement via [prefresh](https://github.com/JoviDeCroock/prefresh/tree/main/packages/vite)
+- Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development 
 
 ## Installation
 
@@ -24,12 +24,27 @@ Enhance your vite config with the Preact preset:
 import { defineConfig } from "vite";
 import withPreact from "@preact/preset-vite";
 
-export default defineConfig(withPreact({
-  // Your custom config
-}));
+export default withPreact({
+  // Your usual vite config
+});
 ```
 
 ## Options
+
+Options can be passed to our preset by adding a second argument:
+
+```js
+withPreact(viteConfig, {
+  // Add your options here
+  devtoolsInProd: true
+});
+```
+
+### Available options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode | 
 
 ## License
 
