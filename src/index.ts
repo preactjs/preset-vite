@@ -3,12 +3,12 @@ import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools";
 
 export interface PreactPluginOptions {
-	injectDevtoolsInProd?: boolean;
+	devtoolsInProd?: boolean;
 }
 
 export default function withPreact(
 	config: UserConfig,
-	{ injectDevtoolsInProd }: PreactPluginOptions = {},
+	{ devtoolsInProd }: PreactPluginOptions = {},
 ): UserConfig {
 	const preactConfig: UserConfig = {
 		esbuild: {
@@ -24,7 +24,7 @@ export default function withPreact(
 			},
 		},
 		plugins: [
-			preactDevtoolsPlugin({ injectInProd: injectDevtoolsInProd }),
+			preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
 			prefresh(),
 		],
 	};
