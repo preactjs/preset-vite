@@ -21,7 +21,6 @@ Enhance your vite config with the Preact preset:
 
 ```js
 // vite.config.js or vite.config.ts
-import { defineConfig } from "vite";
 import withPreact from "@preact/preset-vite";
 
 export default withPreact({
