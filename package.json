@@ -7,7 +7,8 @@
 	"types": "dist/types/index.d.ts",
 	"scripts": {
 		"dev": "vite demo",
-		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json"
+		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json",
+		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
 		"preact",
