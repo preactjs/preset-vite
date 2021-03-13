@@ -1,0 +1,5 @@
+import { lazy } from "preact/server-components";
+const Foo = lazy(() => import("./foo.server").then(m => m.default));
+export function Bar() {
+  return <Foo />;
+}

@@ -1,6 +1,7 @@
 import { Plugin } from "vite";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools";
+import { serverComponentPlugin } from "./server-components/vite-plugin";
 
 export interface PreactPluginOptions {
 	devtoolsInProd?: boolean;
@@ -29,7 +30,8 @@ export default function preactPlugin({
 				};
 			},
 		},
-		preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
-		prefresh(),
+		serverComponentPlugin(),
+		// preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
+		// prefresh(),
 	];
 }
