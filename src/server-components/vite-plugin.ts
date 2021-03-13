@@ -17,7 +17,8 @@ export function serverComponentPlugin(): Plugin {
 
 		enforce: "pre",
 
-		resolveId(id) {
+		resolveId(id, importer, options, ssr) {
+			console.log(id, importer, options, ssr);
 			if (id === FILE) {
 				return FILE;
 			}
