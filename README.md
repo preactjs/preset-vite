@@ -5,7 +5,7 @@ An all in one preset for writing Preact apps with the [vite](https://github.com/
 Features:
 
 - Sets up Hot Module Replacement via [prefresh](https://github.com/JoviDeCroock/prefresh/tree/main/packages/vite)
-- Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development 
+- Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development
 
 ## Installation
 
@@ -17,7 +17,7 @@ npm install --save-dev @preact/preset-vite
 yarn add -D @preact/preset-vite
 ```
 
-Enhance your vite config with the Preact preset: 
+Enhance your vite config with the Preact preset:
 
 ```js
 // vite.config.js or vite.config.ts
@@ -33,7 +33,7 @@ export default withPreact({
 Options can be passed to our preset by adding a second argument:
 
 ```js
-withPreact(viteConfig, {
+export default withPreact(viteConfig, {
   // Add your options here
   devtoolsInProd: true
 });
@@ -43,7 +43,7 @@ withPreact(viteConfig, {
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode | 
+| `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
 
 ## License
 
