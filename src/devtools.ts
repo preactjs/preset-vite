@@ -13,30 +13,38 @@ export function preactDevtoolsPlugin({
 
 	let entry = "";
 	let config: ResolvedConfig;
+	let found = false;
 
 	const plugin: Plugin = {
 		name: "preact:devtools",
+
+		// Ensure that we resolve before everything else
+		enforce: "pre",
 
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
 		},
 
-		transformIndexHtml(html) {
-			// Use this to grab the initial entry js file to
-			// inject "preact/debug" into at a later stage.
-			const match = html.match(/<script type=["]module["] src=["](.*?)["]/);
+		resolveId(id, importer = "") {
+			// Get the main entry file to inject into
+			if (
+				!found &&
+				/\.html$/.test(importer) &&
+				!/\/node_modules\//.test(id) &&
+				/\.[tj]sx?$/.test(id)
+			) {
+				found = true;
+				entry = path.join(config.root, id);
 
-			if (!match || !match.length) {
-				throw new Error(`Didn't find entry script tag in index.html`);
+				// TODO: Vite types require explicit return
+				// undefined here. They're lacking the "void" type
+				// in their declarations
+				return undefined;
 			}
-
-			entry = path.join(config.root, match[1]);
-			return html;
 		},
 
 		transform(code, id) {
-			// Inject "preact/debug" or "preact/devtools" respectively
-			if ((entry === id && config.command === "serve") || injectInProd) {
+			if (entry === id && (config.command === "serve" || injectInProd)) {
 				const source = injectInProd ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
