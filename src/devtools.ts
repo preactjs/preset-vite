@@ -1,5 +1,7 @@
 import { Plugin, ResolvedConfig } from "vite";
 import path from "path";
+import debug from "debug";
+import * as kl from "kolorist";
 
 export interface PreactDevtoolsPluginOptions {
 	injectInProd?: boolean;
@@ -7,6 +9,8 @@ export interface PreactDevtoolsPluginOptions {
 export function preactDevtoolsPlugin({
 	injectInProd = false,
 }: PreactDevtoolsPluginOptions = {}): Plugin {
+	const log = debug("vite:preact-devtools");
+
 	let entry = "";
 	let config: ResolvedConfig;
 
@@ -35,6 +39,8 @@ export function preactDevtoolsPlugin({
 			if ((entry === id && config.command === "serve") || injectInProd) {
 				const source = injectInProd ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
+
+				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
 			}
 
 			return code;
