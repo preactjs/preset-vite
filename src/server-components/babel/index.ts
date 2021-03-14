@@ -12,6 +12,13 @@ export interface PluginState {
 	jsxImports: Set<string>;
 }
 
+export type ServerRegistry = Map<string, ServerEntry>;
+
+export interface ServerEntry {
+	file: string;
+	export: string;
+}
+
 export interface PluginOptions {
 	/**
 	 * Name of the function to wrap around Server Components.
@@ -24,11 +31,27 @@ export interface PluginOptions {
 	 * Default: "preact/server-components"
 	 */
 	importSource?: string;
+	/**
+	 * The url from which to fetch server-rendered views from.
+	 * Can be relative ´/foo/bar` or absolute
+	 * `https://example.com/foo`. Default: /preact
+	 */
+	serverUrl?: string;
+	/**
+	 * Optional registry that maps IDs to entry files for
+	 * Server Components.
+	 */
+	registry?: ServerRegistry;
 }
 
 export const babelServerComponents: Plugin<PluginOptions, PluginState> = (
 	{ types: t, template },
-	{ importId = "lazy", importSource = "preact/server-components" } = {},
+	{
+		importId = "lazy",
+		importSource = "preact/server-components",
+		serverUrl = "/preact",
+		registry = new Map(),
+	} = {},
 ) => {
 	return {
 		name: "preact:server-components",
