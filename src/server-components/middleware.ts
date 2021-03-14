@@ -29,8 +29,7 @@ export const serverComponentMiddleware = ({
 	const log = debug("vite:preact-server-components");
 
 	return (req, res, next) => {
-		// TODO: Why do we need an origin here?
-		const url = new URL(req.url || "", `http://localhost:3000`);
+		const url = new URL(req.url || "", "relative://");
 
 		if (url.pathname === endpoint) {
 			const root = url.searchParams.get("root");
