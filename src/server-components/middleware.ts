@@ -1,6 +1,7 @@
 import { NextHandleFunction } from "connect";
-import { h } from "preact";
+import { jsx } from "preact/jsx-runtime";
 import debug from "debug";
+import path from "path";
 import fs from "fs";
 import { ResolvedConfig, ViteDevServer, build } from "vite";
 import * as kl from "kolorist";
@@ -19,30 +20,24 @@ function endError(res: http.ServerResponse, code: number, message: string) {
 	);
 }
 
-function loadFile(fileName: string, extensions: string[]) {
-	for (const ext of extensions) {
-		try {
-			return fs.statSync(`${fileName}.${ext}`);
-		} catch (err) {
-			console.log(err);
-		}
-	}
-}
-
 export interface MiddlewareOptions {
-	endpoint: string;
+	renderUrl: string;
+	resourceUrl: string;
 	registry: ServerRegistry;
 	server: ViteDevServer;
 	config: ResolvedConfig;
 }
 
 export const serverComponentMiddleware = ({
-	endpoint,
+	renderUrl,
+	resourceUrl,
 	registry,
 	server,
 	config,
 }: MiddlewareOptions): NextHandleFunction => {
 	const log = debug("vite:preact-server-components");
+	// TODO: Where to put this?
+	const cacheDir = path.join(config.root, ".preact");
 
 	return async (req, res, next) => {
 		const url = new URL(req.url || "", "relative://");
@@ -65,8 +60,34 @@ export const serverComponentMiddleware = ({
 			}
 		});
 
-		if (url.pathname.startsWith(endpoint)) {
-			const root = url.pathname.slice(endpoint.length + 1);
+		if (url.pathname.startsWith(resourceUrl)) {
+			const root = url.pathname.slice(
+				resourceUrl.length + 1,
+				url.pathname.lastIndexOf("."),
+			);
+
+			const entry = registry.get(root);
+			if (!entry) {
+				console.log(root, registry);
+				throw new Error("fail");
+			}
+
+			const result2 = await server.transformRequest(entry.file);
+
+			if (typeof result2 !== "object" || result2 === null) {
+				throw new Error("Fail2");
+			}
+
+			try {
+				res.setHeader("Content-Type", "text/javascript");
+				res.end(result2.code || "");
+				return;
+			} catch (err) {
+				endError(res, 400, `Unknown resource "${root}"`);
+				return;
+			}
+		} else if (url.pathname.startsWith(renderUrl)) {
+			const root = url.pathname.slice(renderUrl.length + 1);
 
 			if (!root) {
 				endError(res, 400, `Unknown root "".`);
@@ -79,44 +100,48 @@ export const serverComponentMiddleware = ({
 				return;
 			}
 
-			console.log(url.href, knownRoot);
-			// const result = await server.transformRequest(knownRoot.file);
-
 			const fileName = knownRoot.file;
-			const code = loadFile(knownRoot.file, ["tsx", "ts", "js", "jsx"]);
 
-			console.log("FOUND", code);
-			const r2 = await server.transformWithEsbuild(code, fileName, {
-				loader: "ts",
+			let raw = (config.esbuild! || {}).jsxInject + "\n";
+			raw += fs.readFileSync(fileName, "utf-8");
+
+			const result = await server.transformWithEsbuild(raw, fileName, {
+				...config.esbuild,
+				loader: "tsx",
+				target: "es2019",
+				format: "cjs",
 			});
+
+			const name = `${root}.js`;
+			const file = path.join(cacheDir, name);
+			fs.mkdirSync(path.dirname(file), { recursive: true });
+			fs.writeFileSync(file, result.code, "utf-8");
+			fs.writeFileSync(`${file}.map`, result.map.toString(), "utf-8");
 
 			// const result = await server.(fileName);
 
-			console.log(r2);
 			if (result === null || typeof result !== "object") {
 				endError(res, 400, `Invalid root "${root}"`);
 				return;
 			}
 
-			// TODO: Remove eval. We can't use dynamic import
-			// statements here as they are transpiled away
-			// by vite. This makes me sad :(
-			const mod = eval(result.code || "");
-
+			const mod = await import(file);
 			const Component = mod[knownRoot.export];
-			console.log("BUDNLED", mod, Component);
-
-			// const Component = await import(knownRoot.file).then(
-			// 	mod => mod[knownRoot.export],
-			// );
-			// console.log(Component);
 
 			log(`[serve] ${kl.dim("render")}`);
 
-			const json = renderToServerProtocol(h("h1", props, "hello from Server!"));
+			const json = renderToServerProtocol(
+				jsx(Component, { ...props, children: "hello from Server!" }),
+			);
+
+			const loadUrl = `${resourceUrl}/${name}`;
 
 			res.setHeader("Content-Type", "text/plain");
-			res.end(`J0: ${JSON.stringify(json)}\n`);
+			res.end(
+				// prettier-ignore
+				`M0: ${JSON.stringify({id: loadUrl, exports: Object.keys(mod) })}\n`+
+				`J0: ${JSON.stringify(json)}\n`,
+			);
 
 			console.log("SERVER RENDER !!!");
 		} else {

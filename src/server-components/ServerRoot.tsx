@@ -1,5 +1,5 @@
-import { ComponentChildren, options } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { ComponentChildren } from "preact";
+import { useEffect, useState, useRef } from "preact/hooks";
 import { jsx } from "preact/jsx-runtime";
 
 type StreamedProps = Record<string, any> & {
@@ -16,11 +16,6 @@ type StreamedVNode = StreamedChild | StreamedChild[];
 export interface StreamedModule {
 	id: string;
 }
-
-// @ts-ignore
-options._serverRoots = new Map();
-// @ts-ignore
-options._serverRegistry = new Map();
 
 type Registry = Map<string, Record<string, any>>;
 
@@ -62,11 +57,12 @@ function toVNode(registry: Registry, input: StreamedVNode): ComponentChildren {
 	return input;
 }
 
-export async function parse(roots: Map<string, any>, input: string) {
+export async function parse(
+	roots: Map<string, any>,
+	registry: any,
+	input: string,
+) {
 	const commands = input.split("\n").filter(Boolean);
-
-	// @ts-ignore
-	const registry = options._serverRegistry;
 
 	// TODO: Add support for adding script tags
 	for (const cmd of commands) {
@@ -80,7 +76,7 @@ export async function parse(roots: Map<string, any>, input: string) {
 				const d = data as StreamedModule;
 				try {
 					// @ts-ignore
-					const m = await import(d.id);
+					const m = await import(/* @vite-ignore */ d.id);
 					registry.set(type, m);
 				} catch (err) {
 					throw err;
@@ -106,22 +102,44 @@ export async function parse(roots: Map<string, any>, input: string) {
 	}
 }
 
-export const lazy = (fn: () => Promise<any>) => (props: any) => {
-	const [v, set] = useState<ComponentChildren>(null);
+export const fromServer = (endpoint: string, name: string) => {
+	const ServerComponent = (props: Record<string, any>) => {
+		const [loaded, set] = useState(null);
+		const roots = useRef(new Map([["J0", vnode => set(vnode)]]));
+		const registry = useRef(new Map([["J0", vnode => set(vnode)]]));
 
-	useEffect(() => {
-		// @ts-ignore
-		// const roots = options._serverRoots;
-		// roots.set(url, set);
+		// Track current
+		const revision = useRef(0);
 
-		const mod = encodeURIComponent(exportName);
-		const encProps = encodeURIComponent(JSON.stringify(props));
+		useEffect(() => {
+			revision.current++;
+			const current = revision.current;
 
-		// TODO: Use a central queue to avoid race conditions
-		// fetch(`/preact?module=${mod}&props=${encProps}`)
-		// 	.then(d => d.text())
-		// 	.then(d => parse(roots, d));
-	}, [props]);
+			const params = new URLSearchParams();
+			Object.keys(props).forEach(key => {
+				if (key === "key" || key === "ref") return;
 
-	return <>{v || null}</>;
+				const value = JSON.stringify(props[key]);
+				params.append(key, encodeURIComponent(value));
+			});
+
+			const url = `${endpoint}/${name}${params.toString()}`;
+			fetch(url)
+				.then(res => res.text())
+				.then(r => {
+					// Abort if a new request was initiated before
+					// we finished processing the current one.
+					if (revision.current !== current) {
+						return;
+					}
+
+					parse(roots.current, registry.current, r);
+				});
+		}, [name, props]);
+
+		return loaded || null;
+	};
+
+	ServerComponent.displayName = "ServerComponent";
+	return ServerComponent;
 };

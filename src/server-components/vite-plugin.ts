@@ -17,8 +17,10 @@ import { serverComponentMiddleware } from "./middleware";
 export function serverComponentPlugin(): Plugin {
 	const log = debug("vite:preact-server-components");
 
-	const FILE = "@preact-server-component";
-	const ENDPOINT = "/preact";
+	// const FILE = "@preact-server-component";
+	const FILE = "preact/server-components";
+	const ENDPOINT = "/preact-server/resources";
+	const ENDPOINT_RENDER = "/preact-server/render";
 	const registry: ServerRegistry = new Map();
 	let config: ResolvedConfig;
 
@@ -27,10 +29,28 @@ export function serverComponentPlugin(): Plugin {
 
 		enforce: "pre",
 
-		resolveId(id) {
-			if (id === FILE) {
-				return FILE;
-			}
+		// resolveId(id) {
+		// 	if (id === FILE) {
+		// 		return FILE;
+		// 	}
+		// },
+
+		// TODO: This is only for demo purposes
+		config() {
+			const sc = path.join(
+				__dirname,
+				"..",
+				"src",
+				"server-components",
+				"ServerRoot",
+			);
+			return {
+				resolve: {
+					alias: {
+						[FILE]: sc,
+					},
+				},
+			};
 		},
 
 		configResolved(resolvedConfig) {
@@ -40,58 +60,13 @@ export function serverComponentPlugin(): Plugin {
 		configureServer(server) {
 			server.middlewares.use(
 				serverComponentMiddleware({
-					endpoint: ENDPOINT,
+					renderUrl: ENDPOINT_RENDER,
+					resourceUrl: ENDPOINT,
 					registry,
 					server,
+					config,
 				}),
 			);
-		},
-
-		load(id) {
-			if (id === FILE) {
-				return `import { h, Fragment } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
-
-export const fromServer = (name) => {
-	const ServerComponent = (props) => {
-		const [loaded, set] = useState(null);
-
-		// Track current 
-		const revision = useRef(0);
-
-		useEffect(() => {
-			const current = revision.current++;
-
-			const params = new URLSearchParams();
-			Object.keys(props).forEach(key => {
-				if (key === "key" || key === "ref") return;
-
-				const value = JSON.stringify(props[key]);
-				params.append(key, encodeURIComponent(value))
-			});
-
-			const url = \`${ENDPOINT}/\${name}\${params.toString()}\`
-			fetch(url)
-				.then(res => res.text())
-				.then(r => {
-					// Abort if a new request was initiated before
-					// we finished processing the current one.
-					if (revision.current !== current) {
-						return;
-					}
-
-					console.log(r)
-				})
-		}, [name, props]);
-
-		return loaded ? h(loaded.component, props) : null
-	}
-
-	ServerComponent.displayName = 'ServerComponent'
-	return ServerComponent;
-}
-				`;
-			}
 		},
 
 		transform(code, id) {
@@ -112,7 +87,7 @@ export const fromServer = (name) => {
 							babelServerComponents,
 							{
 								importSource: FILE,
-								serverUrl: ENDPOINT,
+								serverUrl: ENDPOINT_RENDER,
 								registry,
 							},
 						],

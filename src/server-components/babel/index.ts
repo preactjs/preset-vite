@@ -174,7 +174,7 @@ export const babelServerComponents: Plugin<PluginOptions, PluginState> = (
 									file: filename,
 								});
 
-								const ast = template.ast`const ${local} = ${lazyId}("${hash}")`;
+								const ast = template.ast`const ${local} = ${lazyId}("${serverUrl}", "${hash}")`;
 								insertAfterImports(t, path, ast);
 							}
 						});
