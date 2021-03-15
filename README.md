@@ -17,25 +17,26 @@ npm install --save-dev @preact/preset-vite
 yarn add -D @preact/preset-vite
 ```
 
-Enhance your vite config with the Preact preset:
+Enhance your vite config with the Preact preset plugin in your `vite.config.ts` or `vite.config.js`:
 
 ```js
-// vite.config.js or vite.config.ts
-import withPreact from "@preact/preset-vite";
+import { defineConfig } from "vite";
+import preact from "@preact/preset-vite";
 
-export default withPreact({
-  // Your usual vite config
+export default defineConfig({
+  plugins: [preact()]
 });
 ```
 
 ## Options
 
-Options can be passed to our preset by adding a second argument:
+Options can be passed to our preset plugin via the first argument:
 
 ```js
-export default withPreact(viteConfig, {
-  // Add your options here
-  devtoolsInProd: true
+export default defineConfig({
+  plugins: [
+    preact({ devtoolsInProd: true })
+  ]
 });
 ```
 
