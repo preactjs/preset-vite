@@ -119,11 +119,16 @@ export const fromServer = (endpoint: string, name: string) => {
 			Object.keys(props).forEach(key => {
 				if (key === "key" || key === "ref") return;
 
-				const value = JSON.stringify(props[key]);
-				params.append(key, encodeURIComponent(value));
+				const value = props[key];
+				const serialized =
+					typeof value === "string" ? value : JSON.stringify(value);
+				params.append(key, serialized);
 			});
 
-			const url = `${endpoint}/${name}${params.toString()}`;
+			const searchParams = params.toString();
+			const search = searchParams ? `?${searchParams}` : "";
+
+			const url = `${endpoint}/${name}${search}`;
 			fetch(url)
 				.then(res => res.text())
 				.then(r => {

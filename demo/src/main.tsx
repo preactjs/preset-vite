@@ -14,7 +14,7 @@ function App() {
 			<ReactComponent />
 			<h2>Server Component</h2>
 			<Bar />
-			<Other />
+			<Other foo="passed from client" />
 		</div>
 	);
 }

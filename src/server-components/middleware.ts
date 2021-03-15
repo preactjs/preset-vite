@@ -134,6 +134,7 @@ export const serverComponentMiddleware = ({
 				jsx(Component, { ...props, children: "hello from Server!" }),
 			);
 
+			console.log({ resourceUrl, name });
 			const loadUrl = `${resourceUrl}/${name}`;
 
 			res.setHeader("Content-Type", "text/plain");

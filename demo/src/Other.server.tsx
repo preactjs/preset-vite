@@ -1,3 +1,3 @@
-export function Other() {
-	return <h2>Other component</h2>;
+export function Other(props: any) {
+	return <h2>Other component: {props.foo}</h2>;
 }
