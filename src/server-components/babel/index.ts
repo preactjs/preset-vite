@@ -1,4 +1,7 @@
 import { NodePath, types } from "@babel/core";
+import crypto from "crypto";
+import fs from "fs";
+import nodejsPath from "path";
 // @ts-ignore
 import jsx from "@babel/plugin-syntax-jsx";
 import {
@@ -6,6 +9,26 @@ import {
 	insertAfterImports,
 	Plugin,
 } from "babel-plugin-helpers";
+
+function createHash(name: string) {
+	return crypto.createHash("md5").update(name).digest("hex");
+}
+
+function getExtension(fileName: string, extensions: string[]) {
+	for (const ext of extensions) {
+		try {
+			const file = `${fileName}.${ext}`;
+			fs.statSync(file);
+			return file;
+		} catch (err) {
+			if (!/ENOENT/.test(err.message)) {
+				continue;
+			}
+		}
+	}
+
+	throw new Error(`Could not detect extension for ${fileName}`);
+}
 
 export interface PluginState {
 	imports: Map<string, { source: string; imported: string }>;
@@ -46,13 +69,15 @@ export interface PluginOptions {
 
 export const babelServerComponents: Plugin<PluginOptions, PluginState> = (
 	{ types: t, template },
-	{
-		importId = "lazy",
+	options = {},
+) => {
+	const {
+		importId = "fromServer",
 		importSource = "preact/server-components",
 		serverUrl = "/preact",
-		registry = new Map(),
-	} = {},
-) => {
+		registry = new Map() as ServerRegistry,
+	} = options;
+
 	return {
 		name: "preact:server-components",
 		inherits: jsx,
@@ -131,8 +156,25 @@ export const babelServerComponents: Plugin<PluginOptions, PluginState> = (
 
 						imports.forEach((value, local) => {
 							if (used.has(local)) {
-								const ast = template.ast`
-const ${local} = ${lazyId}(() => import("${value.source}").then(m => m.${value.imported}))`;
+								const { source, imported } = value;
+
+								// Create a unique hash per entry for server components
+								const hash = createHash(`${source}#${imported}`);
+
+								let filename = (state as any).filename;
+								filename = getExtension(
+									nodejsPath.join(nodejsPath.dirname(filename), source),
+									["js", "jsx", "ts", "tsx"],
+								);
+
+								console.log(filename);
+
+								registry.set(hash, {
+									export: imported,
+									file: filename,
+								});
+
+								const ast = template.ast`const ${local} = ${lazyId}("${hash}")`;
 								insertAfterImports(t, path, ast);
 							}
 						});

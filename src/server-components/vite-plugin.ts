@@ -1,6 +1,7 @@
-import { Plugin } from "vite";
+import { Plugin, ResolvedConfig } from "vite";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { URL } from "url";
 import { transformSync } from "@babel/core";
 // @ts-ignore
@@ -17,8 +18,9 @@ export function serverComponentPlugin(): Plugin {
 	const log = debug("vite:preact-server-components");
 
 	const FILE = "@preact-server-component";
-	const SERVER_URL = "/preact";
+	const ENDPOINT = "/preact";
 	const registry: ServerRegistry = new Map();
+	let config: ResolvedConfig;
 
 	return {
 		name: "preact:server-components",
@@ -31,31 +33,65 @@ export function serverComponentPlugin(): Plugin {
 			}
 		},
 
-		load(id) {
-			if (id === FILE) {
-				return `import { h } from "preact";
-import { useState, useEffect } from "preact/hooks";
-
-export const lazy = (fn) => (props) => {
-	const [loaded, set] = useState(null);
-
-	useEffect(() => {
-		fn().then(component => set({ component }));
-	}, []);
-
-	return loaded ? h(loaded.component, props) : null;
-}
-				`;
-			}
+		configResolved(resolvedConfig) {
+			config = resolvedConfig;
 		},
 
 		configureServer(server) {
 			server.middlewares.use(
 				serverComponentMiddleware({
-					endpoint: SERVER_URL,
+					endpoint: ENDPOINT,
 					registry,
+					server,
 				}),
 			);
+		},
+
+		load(id) {
+			if (id === FILE) {
+				return `import { h, Fragment } from "preact";
+import { useState, useEffect, useRef } from "preact/hooks";
+
+export const fromServer = (name) => {
+	const ServerComponent = (props) => {
+		const [loaded, set] = useState(null);
+
+		// Track current 
+		const revision = useRef(0);
+
+		useEffect(() => {
+			const current = revision.current++;
+
+			const params = new URLSearchParams();
+			Object.keys(props).forEach(key => {
+				if (key === "key" || key === "ref") return;
+
+				const value = JSON.stringify(props[key]);
+				params.append(key, encodeURIComponent(value))
+			});
+
+			const url = \`${ENDPOINT}/\${name}\${params.toString()}\`
+			fetch(url)
+				.then(res => res.text())
+				.then(r => {
+					// Abort if a new request was initiated before
+					// we finished processing the current one.
+					if (revision.current !== current) {
+						return;
+					}
+
+					console.log(r)
+				})
+		}, [name, props]);
+
+		return loaded ? h(loaded.component, props) : null
+	}
+
+	ServerComponent.displayName = 'ServerComponent'
+	return ServerComponent;
+}
+				`;
+			}
 		},
 
 		transform(code, id) {
@@ -69,14 +105,14 @@ export const lazy = (fn) => (props) => {
 			else if (IMPORT_SERVER_REG.test(code)) {
 				log(kl.dim(`transforming ${id}...`));
 				const out = transformSync(code, {
+					filename: id,
 					plugins: [
 						[typescript, { isTSX: /\.tsx$/.test(id) }],
 						[
 							babelServerComponents,
 							{
-								importId: "lazy",
 								importSource: FILE,
-								serverUrl: SERVER_URL,
+								serverUrl: ENDPOINT,
 								registry,
 							},
 						],
