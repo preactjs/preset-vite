@@ -48,8 +48,15 @@ function toVNode(registry: Registry, input: StreamedVNode): ComponentChildren {
 			const key = input[2] as any;
 			const props = { ...(input[3] as any) };
 			if ("children" in props) {
-				props.children = toVNode(registry, props.children);
+				if (Array.isArray(props.children)) {
+					props.children = props.children.map(child => {
+						return toVNode(registry, child);
+					});
+				} else {
+					props.children = toVNode(registry, props.children);
+				}
 			}
+
 			return jsx(type, props, key);
 		}
 	}
@@ -135,6 +142,7 @@ export const fromServer = (endpoint: string, name: string) => {
 					// Abort if a new request was initiated before
 					// we finished processing the current one.
 					if (revision.current !== current) {
+						console.log("ABROT");
 						return;
 					}
 
