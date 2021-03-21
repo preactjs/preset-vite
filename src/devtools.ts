@@ -1,8 +1,7 @@
-import { Plugin, ResolvedConfig } from "vite";
+import { Plugin, ResolvedConfig, normalizePath } from "vite";
 import path from "path";
 import debug from "debug";
 import * as kl from "kolorist";
-import { toRollupPath } from "./utils";
 
 export interface PreactDevtoolsPluginOptions {
 	injectInProd?: boolean;
@@ -36,7 +35,7 @@ export function preactDevtoolsPlugin({
 			) {
 				found = true;
 
-				entry = toRollupPath(path.join(config.root, id));
+				entry = normalizePath(path.join(config.root, id));
 
 				// TODO: Vite types require explicit return
 				// undefined here. They're lacking the "void" type
