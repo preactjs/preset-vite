@@ -53,7 +53,7 @@ export function preactDevtoolsPlugin({
 				return code;
 			}
 
-			return undefined;
+			return;
 		},
 	};
 
