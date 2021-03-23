@@ -50,9 +50,10 @@ export function preactDevtoolsPlugin({
 				code = `import "${source}";\n${code}`;
 
 				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
+				return code;
 			}
 
-			return code;
+			return undefined;
 		},
 	};
 
