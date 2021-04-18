@@ -7,6 +7,7 @@
 	"types": "dist/types/index.d.ts",
 	"scripts": {
 		"dev": "vite demo",
+		"dev:build": "vite build demo",
 		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json",
 		"prepublishOnly": "npm run build"
 	},
@@ -24,13 +25,17 @@
 	],
 	"dependencies": {
 		"@prefresh/vite": "^2.1.0",
+		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.3.1",
 		"kolorist": "^1.2.10"
 	},
 	"peerDependencies": {
+		"@babel/core": "7.x",
 		"vite": "2.x"
 	},
 	"devDependencies": {
+		"@babel/core": "^7.13.15",
+		"@types/babel__core": "^7.1.14",
 		"@types/debug": "^4.1.5",
 		"@types/node": "^14.14.33",
 		"lint-staged": "^10.5.4",
