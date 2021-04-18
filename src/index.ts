@@ -1,6 +1,7 @@
 import { Plugin } from "vite";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools";
+import { hookNamesPlugin } from "./hook-names";
 
 export interface PreactPluginOptions {
 	devtoolsInProd?: boolean;
@@ -31,5 +32,6 @@ export default function preactPlugin({
 		},
 		preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
 		prefresh(),
+		hookNamesPlugin(),
 	];
 }
