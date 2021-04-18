@@ -7,6 +7,7 @@
 	"types": "dist/types/index.d.ts",
 	"scripts": {
 		"dev": "vite demo",
+		"dev:build": "vite build demo",
 		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json",
 		"prepublishOnly": "npm run build"
 	},
