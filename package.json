@@ -5,11 +5,19 @@
 	"main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
 	"types": "dist/types/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/esm/index.mjs",
+			"require": "./dist/cjs/index.js"
+		},
+		"./package.json": "./package.json",
+		"./": "./"
+	},
 	"scripts": {
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
-		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json",
-		"prepublishOnly": "npm run build"
+		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json && node tools/node-esm.js",
+		"prepublishOnly": "npm run build && check-export-map"
 	},
 	"keywords": [
 		"preact",
@@ -38,6 +46,7 @@
 		"@types/babel__core": "^7.1.14",
 		"@types/debug": "^4.1.5",
 		"@types/node": "^14.14.33",
+		"check-export-map": "^1.0.1",
 		"lint-staged": "^10.5.4",
 		"prettier": "^2.2.1",
 		"rimraf": "^3.0.2",
