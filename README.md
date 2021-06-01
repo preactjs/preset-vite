@@ -45,6 +45,7 @@ export default defineConfig({
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
+| `disableJsxInject` | `boolean` | `false` | Disable automatic imports for JSX in Preact |
 
 ## License
 
