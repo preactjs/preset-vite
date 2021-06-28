@@ -10,7 +10,7 @@ export function hookNamesPlugin(): Plugin {
 			config = resolvedConfig;
 		},
 		async transform(code, id) {
-			if (config.command !== "serve") {
+			if (config.isProduction) {
 				return;
 			}
 
