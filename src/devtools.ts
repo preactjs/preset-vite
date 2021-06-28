@@ -45,7 +45,7 @@ export function preactDevtoolsPlugin({
 		},
 
 		transform(code, id) {
-			if (entry === id && (config.command === "serve" || injectInProd)) {
+			if (entry === id && (!config.isProduction || injectInProd)) {
 				const source = injectInProd ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
