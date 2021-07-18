@@ -2,9 +2,9 @@
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "Node",
-    "outDir": "dist/cjs/"
+    "outDir": "dist"
   },
   "files": ["./src/index.ts"]
 }

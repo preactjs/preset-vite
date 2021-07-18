@@ -19,7 +19,7 @@ export function hookNamesPlugin(): Plugin {
 			}
 
 			const res = await transformAsync(code, {
-				plugins: [require.resolve("babel-plugin-transform-hook-names")],
+				plugins: ["babel-plugin-transform-hook-names"],
 				filename: id,
 				sourceMaps: true,
 			});
