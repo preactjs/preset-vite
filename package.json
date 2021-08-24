@@ -2,13 +2,13 @@
 	"name": "@preact/preset-vite",
 	"version": "2.1.0",
 	"description": "Preact preset for the vite bundler",
-	"main": "dist/cjs/index.js",
-	"module": "dist/esm/index.js",
+	"type": "module",
+	"exports": "./dist/index.js",
 	"types": "dist/types/index.d.ts",
 	"scripts": {
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
-		"build": "rimraf dist/ && tsc && tsc -p tsconfig.esm.json",
+		"build": "rimraf dist && tsc",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
