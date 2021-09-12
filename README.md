@@ -35,7 +35,9 @@ Options can be passed to our preset plugin via the first argument:
 ```js
 export default defineConfig({
   plugins: [
-    preact({ devtoolsInProd: true })
+    preact({ 
+      devtoolsInProd: true
+    })
   ]
 });
 ```
@@ -45,6 +47,7 @@ export default defineConfig({
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
+| `jsxInject` | `string` |  | (Advanced option) Overwrites the default esbuild `jsxInject` option. <br>To disable injection set `{ jsxInject: ''}`. This might be desired if `import { h } from 'preact'` needs to be part of all .jsx files. |
 
 ## License
 
