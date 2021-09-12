@@ -5,10 +5,12 @@ import { hookNamesPlugin } from "./hook-names.js";
 
 export interface PreactPluginOptions {
 	devtoolsInProd?: boolean;
+	jsxInject?: string;
 }
 
 export default function preactPlugin({
 	devtoolsInProd,
+	jsxInject,
 }: PreactPluginOptions = {}): Plugin[] {
 	return [
 		{
@@ -18,7 +20,7 @@ export default function preactPlugin({
 					esbuild: {
 						jsxFactory: "h",
 						jsxFragment: "Fragment",
-						jsxInject: `import { h, Fragment } from 'preact'`,
+						jsxInject: jsxInject ?? `import { h, Fragment } from 'preact'`,
 					},
 					resolve: {
 						alias: {
