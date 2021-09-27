@@ -1,10 +1,10 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "outDir": "dist"
-  },
-  "files": ["./src/index.ts"]
+	"compilerOptions": {
+		"strict": true,
+		"esModuleInterop": true,
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"outDir": "dist/esm/"
+	},
+	"files": ["./src/index.ts"]
 }
