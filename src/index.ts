@@ -46,7 +46,10 @@ export default function preactPlugin({
 				].join("\n");
 			}
 		},
-		transform(code, id) {
+		transform(code, url) {
+			// Ignore query parameters, as in Vue SFC virtual modules.
+			const id = url.split('?', 2)[0]
+
 			if (/\.[tj]sx?$/.test(id) && !id.includes("node_modules")) {
 				const parserPlugins = [
 					"importMeta",
