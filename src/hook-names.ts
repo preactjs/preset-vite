@@ -1,7 +1,15 @@
 import { transformAsync } from "@babel/core";
 import { Plugin, ResolvedConfig } from "vite";
+import type { RollupFilter } from "./utils";
+import { parseId } from "./utils";
 
-export function hookNamesPlugin(): Plugin {
+export interface PreactHookNamesPluginOptions {
+	shouldTransform: RollupFilter;
+}
+
+export function hookNamesPlugin({
+	shouldTransform,
+}: PreactHookNamesPluginOptions): Plugin {
 	let config: ResolvedConfig;
 
 	return {
@@ -9,12 +17,14 @@ export function hookNamesPlugin(): Plugin {
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
 		},
-		async transform(code, id) {
+		async transform(code, url) {
 			if (config.isProduction) {
 				return;
 			}
 
-			if (!/\.[tj]sx$/.test(id)) {
+			const { id } = parseId(url);
+
+			if (!shouldTransform(id)) {
 				return;
 			}
 

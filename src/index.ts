@@ -4,10 +4,10 @@ import type { ParserPlugin } from "@babel/parser";
 
 import resolve from "resolve";
 import prefresh from "@prefresh/vite";
-import * as babel from "@babel/core";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { hookNamesPlugin } from "./hook-names.js";
 import { createFilter, parseId } from "./utils";
+import { transformAsync } from "@babel/core";
 
 export interface PreactPluginOptions {
 	/**
@@ -70,7 +70,7 @@ export default function preactPlugin({
 				].join("\n");
 			}
 		},
-		transform(code, url) {
+		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
 			const { id } = parseId(url);
 
@@ -88,7 +88,7 @@ export default function preactPlugin({
 					/\.tsx?$/.test(id) && "typescript",
 				].filter(Boolean) as ParserPlugin[];
 
-				const result = babel.transformSync(code, {
+				const result = await transformAsync(code, {
 					babelrc: false,
 					configFile: false,
 					ast: true,
@@ -143,6 +143,6 @@ export default function preactPlugin({
 		jsxPlugin,
 		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
 		prefresh(),
-		hookNamesPlugin(),
+		hookNamesPlugin({ shouldTransform }),
 	];
 }
