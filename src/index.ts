@@ -7,7 +7,7 @@ import prefresh from "@prefresh/vite";
 import * as babel from "@babel/core";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { hookNamesPlugin } from "./hook-names.js";
-import { createFilter } from "@rollup/pluginutils";
+import { createFilter, parseId } from "./utils";
 
 export interface PreactPluginOptions {
 	/**
@@ -72,7 +72,7 @@ export default function preactPlugin({
 		},
 		transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
-			const id = url.split('?', 2)[0]
+			const { id } = parseId(url);
 
 			if (shouldTransform(id)) {
 				const parserPlugins = [
@@ -141,7 +141,7 @@ export default function preactPlugin({
 			},
 		},
 		jsxPlugin,
-		preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
+		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
 		prefresh(),
 		hookNamesPlugin(),
 	];

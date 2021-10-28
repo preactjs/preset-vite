@@ -3,12 +3,18 @@ import path from "path";
 import debug from "debug";
 import * as kl from "kolorist";
 
+import type { RollupFilter } from "./utils";
+import { parseId } from "./utils";
+
 export interface PreactDevtoolsPluginOptions {
 	injectInProd?: boolean;
+	shouldTransform: RollupFilter;
 }
+
 export function preactDevtoolsPlugin({
 	injectInProd = false,
-}: PreactDevtoolsPluginOptions = {}): Plugin {
+	shouldTransform,
+}: PreactDevtoolsPluginOptions): Plugin {
 	const log = debug("vite:preact-devtools");
 
 	let entry = "";
@@ -25,14 +31,11 @@ export function preactDevtoolsPlugin({
 			config = resolvedConfig;
 		},
 
-		resolveId(id, importer = "") {
+		resolveId(url, importer = "") {
+			const { id } = parseId(url);
+
 			// Get the main entry file to inject into
-			if (
-				!found &&
-				/\.html$/.test(importer) &&
-				!/\/node_modules\//.test(id) &&
-				/\.[tj]sx?$/.test(id)
-			) {
+			if (!found && /\.html$/.test(importer) && shouldTransform(id)) {
 				found = true;
 
 				entry = normalizePath(path.join(config.root, id));
@@ -44,7 +47,9 @@ export function preactDevtoolsPlugin({
 			}
 		},
 
-		transform(code, id) {
+		transform(code, url) {
+			const { id } = parseId(url);
+
 			if (entry === id && (!config.isProduction || injectInProd)) {
 				const source = injectInProd ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
@@ -52,7 +57,6 @@ export function preactDevtoolsPlugin({
 				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
 				return code;
 			}
-
 		},
 	};
 
