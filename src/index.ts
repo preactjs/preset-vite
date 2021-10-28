@@ -1,20 +1,44 @@
-import { Plugin } from "vite";
+import type { Plugin } from "vite";
+import type { FilterPattern } from "@rollup/pluginutils";
+import type { ParserPlugin } from "@babel/parser";
+
 import resolve from "resolve";
 import prefresh from "@prefresh/vite";
-import * as babel from "@babel/core";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { hookNamesPlugin } from "./hook-names.js";
-import { ParserPlugin } from "@babel/parser";
+import { createFilter, parseId } from "./utils";
+import { transformAsync } from "@babel/core";
 
 export interface PreactPluginOptions {
+	/**
+	 * Inject devtools bridge in production bundle instead of only in development mode.
+	 * @default false
+	 */
 	devtoolsInProd?: boolean;
+	/**
+	 * RegExp or glob to match files to be transformed
+	 */
+	include?: FilterPattern;
+
+	/**
+	 * RegExp or glob to match files to NOT be transformed
+	 */
+	exclude?: FilterPattern;
 }
 
 // Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
 export default function preactPlugin({
 	devtoolsInProd,
+	include,
+	exclude,
 }: PreactPluginOptions = {}): Plugin[] {
 	let projectRoot: string = process.cwd();
+
+	const shouldTransform = createFilter(
+		include || [/\.[tj]sx?$/],
+		exclude || [/node_modules/, /\.git/],
+	);
+
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
 		enforce: "pre",
@@ -46,11 +70,11 @@ export default function preactPlugin({
 				].join("\n");
 			}
 		},
-		transform(code, url) {
+		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
-			const id = url.split('?', 2)[0]
+			const { id } = parseId(url);
 
-			if (/\.[tj]sx?$/.test(id) && !id.includes("node_modules")) {
+			if (shouldTransform(id)) {
 				const parserPlugins = [
 					"importMeta",
 					// This plugin is applied before esbuild transforms the code,
@@ -64,7 +88,7 @@ export default function preactPlugin({
 					/\.tsx?$/.test(id) && "typescript",
 				].filter(Boolean) as ParserPlugin[];
 
-				const result = babel.transformSync(code, {
+				const result = await transformAsync(code, {
 					babelrc: false,
 					configFile: false,
 					ast: true,
@@ -117,8 +141,8 @@ export default function preactPlugin({
 			},
 		},
 		jsxPlugin,
-		preactDevtoolsPlugin({ injectInProd: devtoolsInProd }),
+		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
 		prefresh(),
-		hookNamesPlugin(),
+		hookNamesPlugin({ shouldTransform }),
 	];
 }
