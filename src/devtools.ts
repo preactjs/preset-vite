@@ -3,8 +3,8 @@ import path from "path";
 import debug from "debug";
 import * as kl from "kolorist";
 
-import type { RollupFilter } from "./utils";
-import { parseId } from "./utils";
+import type { RollupFilter } from "./utils.js";
+import { parseId } from "./utils.js";
 
 export interface PreactDevtoolsPluginOptions {
 	injectInProd?: boolean;

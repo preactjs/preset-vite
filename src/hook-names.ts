@@ -1,7 +1,7 @@
 import { transformAsync } from "@babel/core";
 import { Plugin, ResolvedConfig } from "vite";
-import type { RollupFilter } from "./utils";
-import { parseId } from "./utils";
+import type { RollupFilter } from "./utils.js";
+import { parseId } from "./utils.js";
 
 export interface PreactHookNamesPluginOptions {
 	shouldTransform: RollupFilter;
