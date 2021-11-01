@@ -6,7 +6,7 @@ import resolve from "resolve";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { hookNamesPlugin } from "./hook-names.js";
-import { createFilter, parseId } from "./utils";
+import { createFilter, parseId } from "./utils.js";
 import { transformAsync } from "@babel/core";
 
 export interface PreactPluginOptions {
