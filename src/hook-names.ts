@@ -32,6 +32,9 @@ export function hookNamesPlugin({
 				plugins: ["babel-plugin-transform-hook-names"],
 				filename: id,
 				sourceMaps: true,
+				configFile: false,
+				babelrc: false,
+				ast: false,
 			});
 
 			// TODO: When does this happen? The babel documentation isn't
