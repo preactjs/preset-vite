@@ -142,6 +142,6 @@ export default function preactPlugin({
 		},
 		jsxPlugin,
 		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
-		prefresh(),
+		prefresh({ include, exclude }),
 	];
 }
