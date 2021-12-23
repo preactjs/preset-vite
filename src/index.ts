@@ -1,11 +1,10 @@
-import type { Plugin } from "vite";
+import type { Plugin, ResolvedConfig } from "vite";
 import type { FilterPattern } from "@rollup/pluginutils";
 import type { ParserPlugin } from "@babel/parser";
 
 import resolve from "resolve";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
-import { hookNamesPlugin } from "./hook-names.js";
 import { createFilter, parseId } from "./utils.js";
 import { transformAsync } from "@babel/core";
 
@@ -32,7 +31,7 @@ export default function preactPlugin({
 	include,
 	exclude,
 }: PreactPluginOptions = {}): Plugin[] {
-	let projectRoot: string = process.cwd();
+	let config: ResolvedConfig;
 
 	const shouldTransform = createFilter(
 		include || [/\.[tj]sx?$/],
@@ -49,8 +48,8 @@ export default function preactPlugin({
 				},
 			};
 		},
-		configResolved(config) {
-			projectRoot = config.root;
+		configResolved(resolvedConfig) {
+			config = resolvedConfig;
 		},
 		resolveId(id: string) {
 			return id === "preact/jsx-runtime" ? id : null;
@@ -58,7 +57,7 @@ export default function preactPlugin({
 		load(id: string) {
 			if (id === "preact/jsx-runtime") {
 				const runtimePath = resolve.sync("preact/jsx-runtime", {
-					basedir: projectRoot,
+					basedir: config.root,
 				});
 				const exports = ["jsx", "jsxs", "Fragment"];
 				return [
@@ -74,55 +73,56 @@ export default function preactPlugin({
 			// Ignore query parameters, as in Vue SFC virtual modules.
 			const { id } = parseId(url);
 
-			if (shouldTransform(id)) {
-				const parserPlugins = [
-					"importMeta",
-					// This plugin is applied before esbuild transforms the code,
-					// so we need to enable some stage 3 syntax that is supported in
-					// TypeScript and some environments already.
-					"topLevelAwait",
-					"classProperties",
-					"classPrivateProperties",
-					"classPrivateMethods",
-					!id.endsWith(".ts") && "jsx",
-					/\.tsx?$/.test(id) && "typescript",
-				].filter(Boolean) as ParserPlugin[];
+			if (!shouldTransform(id)) return;
 
-				const result = await transformAsync(code, {
-					babelrc: false,
-					configFile: false,
-					ast: true,
-					root: projectRoot,
-					filename: id,
-					parserOpts: {
-						sourceType: "module",
-						allowAwaitOutsideFunction: true,
-						plugins: parserPlugins,
-					},
-					generatorOpts: {
-						decoratorsBeforeExport: true,
-					},
-					plugins: [
-						[
-							"@babel/plugin-transform-react-jsx",
-							{
-								runtime: "automatic",
-								importSource: "preact",
-							},
-						],
+			const parserPlugins = [
+				"importMeta",
+				// This plugin is applied before esbuild transforms the code,
+				// so we need to enable some stage 3 syntax that is supported in
+				// TypeScript and some environments already.
+				"topLevelAwait",
+				"classProperties",
+				"classPrivateProperties",
+				"classPrivateMethods",
+				!id.endsWith(".ts") && "jsx",
+				/\.tsx?$/.test(id) && "typescript",
+			].filter(Boolean) as ParserPlugin[];
+
+			const result = await transformAsync(code, {
+				babelrc: false,
+				configFile: false,
+				ast: true,
+				root: config.root,
+				filename: id,
+				parserOpts: {
+					sourceType: "module",
+					allowAwaitOutsideFunction: true,
+					plugins: parserPlugins,
+				},
+				generatorOpts: {
+					decoratorsBeforeExport: true,
+				},
+				plugins: [
+					[
+						"@babel/plugin-transform-react-jsx",
+						{
+							runtime: "automatic",
+							importSource: "preact",
+						},
 					],
-					sourceMaps: true,
-					inputSourceMap: false as any,
-				});
+					...(config.isProduction ? [] : ["babel-plugin-transform-hook-names"]),
+				],
+				sourceMaps: true,
+				inputSourceMap: false as any,
+			});
 
-				if (!result) return { code };
+			// NOTE: Since no config file is being loaded, this path wouldn't occur.
+			if (!result) return;
 
-				return {
-					code: result.code || code,
-					map: result.map,
-				};
-			}
-			return undefined;
+			return {
+				code: result.code || code,
+				map: result.map,
+			};
 		},
 	};
 	return [
@@ -143,6 +143,5 @@ export default function preactPlugin({
 		jsxPlugin,
 		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
 		prefresh({ include, exclude }),
-		hookNamesPlugin({ shouldTransform }),
 	];
 }
