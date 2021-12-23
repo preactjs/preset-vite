@@ -1,6 +1,6 @@
 {
 	"name": "@preact/preset-vite",
-	"version": "2.1.5",
+	"version": "2.1.6",
 	"description": "Preact preset for the vite bundler",
 	"main": "./dist/cjs/index.js",
 	"module": "./dist/esm/index.mjs",
@@ -9,8 +9,7 @@
 			"import": "./dist/esm/index.mjs",
 			"require": "./dist/cjs/index.js"
 		},
-		"./package.json": "./package.json",
-		"./": "./"
+		"./package.json": "./package.json"
 	},
 	"types": "dist/types/index.d.ts",
 	"scripts": {
@@ -33,7 +32,7 @@
 	],
 	"dependencies": {
 		"@babel/plugin-transform-react-jsx": "^7.14.9",
-		"@prefresh/vite": "^2.2.5",
+		"@prefresh/vite": "^2.2.6",
 		"@rollup/pluginutils": "^4.1.1",
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.3.1",
