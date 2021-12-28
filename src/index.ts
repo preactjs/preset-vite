@@ -35,7 +35,7 @@ export default function preactPlugin({
 
 	const shouldTransform = createFilter(
 		include || [/\.[tj]sx?$/],
-		exclude || [/node_modules/, /\.git/],
+		exclude || [/node_modules/],
 	);
 
 	const jsxPlugin: Plugin = {
