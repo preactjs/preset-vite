@@ -104,7 +104,9 @@ export default function preactPlugin({
 				},
 				plugins: [
 					[
-						"@babel/plugin-transform-react-jsx",
+						config.isProduction
+							? "@babel/plugin-transform-react-jsx"
+							: "@babel/plugin-transform-react-jsx-development",
 						{
 							runtime: "automatic",
 							importSource: "preact",
