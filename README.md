@@ -46,6 +46,24 @@ export default defineConfig({
 |---|---|---|---|
 | `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
 
+### Babel configuration
+
+The `babel` option lets you add plugins, presets, and [other configuration](https://babeljs.io/docs/en/options) to the Babel transformation performed on each JSX/TSX file.
+
+```js
+preact({
+  babel: {
+    presets: [...],
+    // Your plugins run before any built-in transform (eg: Fast Refresh)
+    plugins: [...],
+    // Use .babelrc files
+    babelrc: true,
+    // Use babel.config.js files
+    configFile: true,
+  }
+})
+```
+
 ## License
 
 MIT, see [the license file](./LICENSE).
