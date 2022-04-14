@@ -16,7 +16,7 @@
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
 		"build": "rimraf dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
-		"prepublishOnly": "npm run build"
+		"prepare": "npm run build"
 	},
 	"keywords": [
 		"preact",
