@@ -39,6 +39,10 @@ export interface PreactPluginOptions {
 	 * Babel configuration applied in both dev and prod.
 	 */
 	babel?: BabelOptions;
+	/**
+	 * Import Source for jsx. Defaults to "preact".
+	 */
+	jsxImportSource?: string;
 }
 
 export interface PreactBabelOptions extends BabelOptions {
@@ -56,6 +60,7 @@ export default function preactPlugin({
 	include,
 	exclude,
 	babel,
+	jsxImportSource,
 }: PreactPluginOptions = {}): Plugin[] {
 	let config: ResolvedConfig;
 
@@ -149,7 +154,7 @@ export default function preactPlugin({
 							: "@babel/plugin-transform-react-jsx-development",
 						{
 							runtime: "automatic",
-							importSource: "preact",
+							importSource: jsxImportSource ?? "preact",
 						},
 					],
 					...(config.isProduction ? [] : ["babel-plugin-transform-hook-names"]),
