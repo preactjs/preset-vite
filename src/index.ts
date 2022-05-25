@@ -51,7 +51,7 @@ export interface PreactBabelOptions extends BabelOptions {
 }
 
 // Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
-export default function preactPlugin({
+function preactPlugin({
 	devtoolsInProd,
 	include,
 	exclude,
@@ -187,3 +187,5 @@ export default function preactPlugin({
 		prefresh({ include, exclude }),
 	];
 }
+
+export { preactPlugin as default, preactPlugin as preact };
