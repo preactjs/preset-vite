@@ -3,7 +3,6 @@ import type { FilterPattern } from "@rollup/pluginutils";
 import type { ParserPlugin, ParserOptions } from "@babel/parser";
 import type { TransformOptions } from "@babel/core";
 
-import resolve from "resolve";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { createFilter, parseId } from "./utils.js";
@@ -88,24 +87,6 @@ export default function preactPlugin({
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
-		},
-		resolveId(id: string) {
-			return id === "preact/jsx-runtime" ? id : null;
-		},
-		load(id: string) {
-			if (id === "preact/jsx-runtime") {
-				const runtimePath = resolve.sync("preact/jsx-runtime", {
-					basedir: config.root,
-				});
-				const exports = ["jsx", "jsxs", "Fragment"];
-				return [
-					`import * as jsxRuntime from ${JSON.stringify(runtimePath)}`,
-					// We can't use `export * from` or else any callsite that uses
-					// this module will be compiled to `jsxRuntime.exports.jsx`
-					// instead of the more concise `jsx` alias.
-					...exports.map(name => `export const ${name} = jsxRuntime.${name}`),
-				].join("\n");
-			}
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
