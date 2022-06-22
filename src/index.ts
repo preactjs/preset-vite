@@ -82,7 +82,7 @@ export default function preactPlugin({
 		config() {
 			return {
 				optimizeDeps: {
-					include: ["preact/jsx-runtime"],
+					include: ["preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
 			};
 		},
