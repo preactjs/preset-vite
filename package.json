@@ -42,7 +42,7 @@
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
-		"vite": "2.x"
+		"vite": "2.x || 3.x"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.15.8",
