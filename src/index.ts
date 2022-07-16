@@ -188,4 +188,5 @@ function preactPlugin({
 	];
 }
 
-export { preactPlugin as default, preactPlugin as preact };
+export default preactPlugin;
+export { preactPlugin as preact };
