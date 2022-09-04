@@ -27,6 +27,14 @@ export function preactDevtoolsPlugin({
 		// Ensure that we resolve before everything else
 		enforce: "pre",
 
+		config() {
+			return {
+				optimizeDeps: {
+					include: ["preact/debug", "preact/devtools"],
+				},
+			};
+		},
+
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
 		},
