@@ -6,6 +6,7 @@ Features:
 
 - Sets up Hot Module Replacement via [prefresh](https://github.com/JoviDeCroock/prefresh/tree/main/packages/vite)
 - Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development
+- Aliases React to `preact/compat`
 
 ## Installation
 
