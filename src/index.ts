@@ -166,7 +166,7 @@ function preactPlugin({
 			};
 		},
 	};
-	const plugins = [
+	return [
 		{
 			name: "preact:config",
 			config() {
@@ -182,17 +182,16 @@ function preactPlugin({
 			},
 		},
 		jsxPlugin,
+		...(devToolsEnabled
+			? []
+			: [
+					preactDevtoolsPlugin({
+						injectInProd: devtoolsInProd,
+						shouldTransform,
+					}),
+			  ]),
+		...(prefreshEnabled ? [] : [prefresh({ include, exclude })]),
 	];
-
-	if (devToolsEnabled) {
-		plugins.push(
-			preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
-		);
-	}
-	if (prefreshEnabled) {
-		plugins.push(prefresh({ include, exclude }));
-	}
-	return plugins;
 }
 
 export default preactPlugin;
