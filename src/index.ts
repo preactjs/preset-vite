@@ -183,14 +183,14 @@ function preactPlugin({
 		},
 		jsxPlugin,
 		...(devToolsEnabled
-			? []
-			: [
+			? [
 					preactDevtoolsPlugin({
 						injectInProd: devtoolsInProd,
 						shouldTransform,
 					}),
-			  ]),
-		...(prefreshEnabled ? [] : [prefresh({ include, exclude })]),
+			  ]
+			: []),
+		...(prefreshEnabled ? [prefresh({ include, exclude })] : []),
 	];
 }
 
