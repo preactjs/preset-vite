@@ -24,6 +24,19 @@ export interface PreactPluginOptions {
 	 * @default false
 	 */
 	devtoolsInProd?: boolean;
+
+	/**
+	 * Whether to use Preact devtools
+	 * @default true
+	 */
+	devToolsEnabled?: boolean;
+
+	/**
+	 * Whether to use prefresh HMR
+	 * @default true
+	 */
+	prefreshEnabled?: boolean;
+
 	/**
 	 * RegExp or glob to match files to be transformed
 	 */
@@ -52,6 +65,8 @@ export interface PreactBabelOptions extends BabelOptions {
 // Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
 function preactPlugin({
 	devtoolsInProd,
+	devToolsEnabled,
+	prefreshEnabled,
 	include,
 	exclude,
 	babel,
@@ -74,6 +89,9 @@ function preactPlugin({
 		include || [/\.[tj]sx?$/],
 		exclude || [/node_modules/],
 	);
+
+	devToolsEnabled = devToolsEnabled ?? true;
+	prefreshEnabled = prefreshEnabled ?? true;
 
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
@@ -164,8 +182,15 @@ function preactPlugin({
 			},
 		},
 		jsxPlugin,
-		preactDevtoolsPlugin({ injectInProd: devtoolsInProd, shouldTransform }),
-		prefresh({ include, exclude }),
+		...(devToolsEnabled
+			? [
+					preactDevtoolsPlugin({
+						injectInProd: devtoolsInProd,
+						shouldTransform,
+					}),
+			  ]
+			: []),
+		...(prefreshEnabled ? [prefresh({ include, exclude })] : []),
 	];
 }
 

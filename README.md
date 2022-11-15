@@ -45,6 +45,8 @@ export default defineConfig({
 
 | Option | Type | Default | Description |
 |---|---|---|---|
+| `devToolsEnabled` | `boolean` | `true` | Inject devtools bridge |
+| `prefreshEnabled` | `boolean` | `true` | Inject [Prefresh](https://github.com/preactjs/prefresh) for HMR |
 | `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
 
 ### Babel configuration
