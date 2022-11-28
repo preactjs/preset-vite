@@ -72,5 +72,8 @@
 		"useTabs": true,
 		"arrowParens": "avoid",
 		"trailingComma": "all"
+	},
+	"volta": {
+		"node": "18.12.1"
 	}
 }
