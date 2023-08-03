@@ -41,7 +41,7 @@ export interface PreactPluginOptions {
 	 * Whether to use preact/compat aliases
 	 * @default true
 	 */
-	compatAliasesEnabled?: boolean;
+	reactAliasesEnabled?: boolean;
 
 	/**
 	 * RegExp or glob to match files to be transformed
@@ -73,7 +73,7 @@ function preactPlugin({
 	devtoolsInProd,
 	devToolsEnabled,
 	prefreshEnabled,
-	compatAliasesEnabled,
+	reactAliasesEnabled,
 	include,
 	exclude,
 	babel,
@@ -99,7 +99,7 @@ function preactPlugin({
 
 	devToolsEnabled = devToolsEnabled ?? true;
 	prefreshEnabled = prefreshEnabled ?? true;
-	compatAliasesEnabled = compatAliasesEnabled ?? true;
+	reactAliasesEnabled = reactAliasesEnabled ?? true;
 
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
@@ -175,7 +175,7 @@ function preactPlugin({
 		},
 	};
 	return [
-		...(compatAliasesEnabled
+		...(reactAliasesEnabled
 			? [
 					{
 						name: "preact:config",
