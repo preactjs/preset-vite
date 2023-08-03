@@ -38,6 +38,12 @@ export interface PreactPluginOptions {
 	prefreshEnabled?: boolean;
 
 	/**
+	 * Whether to alias react, react-dom to preact/compat
+	 * @default true
+	 */
+	reactAliasesEnabled?: boolean;
+
+	/**
 	 * RegExp or glob to match files to be transformed
 	 */
 	include?: FilterPattern;
@@ -67,6 +73,7 @@ function preactPlugin({
 	devtoolsInProd,
 	devToolsEnabled,
 	prefreshEnabled,
+	reactAliasesEnabled,
 	include,
 	exclude,
 	babel,
@@ -92,6 +99,7 @@ function preactPlugin({
 
 	devToolsEnabled = devToolsEnabled ?? true;
 	prefreshEnabled = prefreshEnabled ?? true;
+	reactAliasesEnabled = reactAliasesEnabled ?? true;
 
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
@@ -167,20 +175,24 @@ function preactPlugin({
 		},
 	};
 	return [
-		{
-			name: "preact:config",
-			config() {
-				return {
-					resolve: {
-						alias: {
-							"react-dom/test-utils": "preact/test-utils",
-							"react-dom": "preact/compat",
-							react: "preact/compat",
+		...(reactAliasesEnabled
+			? [
+					{
+						name: "preact:config",
+						config() {
+							return {
+								resolve: {
+									alias: {
+										"react-dom/test-utils": "preact/test-utils",
+										"react-dom": "preact/compat",
+										react: "preact/compat",
+									},
+								},
+							};
 						},
 					},
-				};
-			},
-		},
+			  ]
+			: []),
 		jsxPlugin,
 		...(devToolsEnabled
 			? [
