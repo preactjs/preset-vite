@@ -38,7 +38,7 @@ export interface PreactPluginOptions {
 	prefreshEnabled?: boolean;
 
 	/**
-	 * Whether to use preact/compat aliases
+	 * Whether to alias react, react-dom to preact/compat
 	 * @default true
 	 */
 	reactAliasesEnabled?: boolean;
