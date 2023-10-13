@@ -78,6 +78,11 @@ function preactPlugin({
 	exclude,
 	babel,
 }: PreactPluginOptions = {}): Plugin[] {
+	const baseParserOptions = [
+		"importMeta",
+		"explicitResourceManagement",
+		"topLevelAwait",
+	];
 	let config: ResolvedConfig;
 
 	let babelOptions = {
@@ -121,11 +126,7 @@ function preactPlugin({
 			if (!shouldTransform(id)) return;
 
 			const parserPlugins = [
-				"importMeta",
-				// This plugin is applied before esbuild transforms the code,
-				// so we need to enable some stage 3 syntax that is supported in
-				// TypeScript and some environments already.
-				"topLevelAwait",
+				...baseParserOptions,
 				"classProperties",
 				"classPrivateProperties",
 				"classPrivateMethods",
@@ -202,7 +203,9 @@ function preactPlugin({
 					}),
 			  ]
 			: []),
-		...(prefreshEnabled ? [prefresh({ include, exclude })] : []),
+		...(prefreshEnabled
+			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
+			: []),
 	];
 }
 
