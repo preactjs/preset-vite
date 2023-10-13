@@ -44,6 +44,8 @@
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
+		"magic-string": "^0.30.5",
+		"node-html-parser": "^6.1.10",
 		"vite": "2.x || 3.x || 4.x || 5.x"
 	},
 	"devDependencies": {
