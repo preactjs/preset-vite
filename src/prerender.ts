@@ -41,7 +41,7 @@ export function PrerenderPlugin({
 	prerenderScript,
 	additionalPrerenderRoutes,
 }: PrerenderPluginOptions = {}): Plugin {
-	const preloadHelperId = "\0vite/preload-helper";
+	const preloadHelperId = "vite/preload-helper";
 	let viteConfig: UserConfig = {};
 
 	additionalPrerenderRoutes ||= [];
@@ -96,17 +96,14 @@ export function PrerenderPlugin({
 					: { ...opts.input, prerenderEntry: prerenderScript };
 			opts.preserveEntrySignatures = "allow-extension";
 		},
+		// Injects a window check into Vite's preload helper, instantly resolving
+		// the module rather than attempting to add a <link> to the document.
 		transform(code, id) {
-			// Injects a window check into Vite's preload helper, instantly resolving
-			// the module rather than attempting to add a <link> to the document.
-			//
-			// TODO: See if we can make this less brittle
-			if (id === preloadHelperId) {
+			if (id.endsWith(preloadHelperId)) {
 				const s = new MagicString(code);
 				s.replace(
-					`const links = document.getElementsByTagName('link');`,
-					`if (typeof window === 'undefined') return new Promise(r => r()).then(() => baseModule());
-                         const links = document.getElementsByTagName('link');`,
+					`deps.length === 0`,
+					`deps.length === 0 || typeof window === 'undefined'`,
 				);
 				return {
 					code: s.toString(),
