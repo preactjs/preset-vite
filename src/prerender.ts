@@ -1,10 +1,30 @@
 import path from "node:path";
 import os from "node:os";
 import { promises as fs } from "node:fs";
+
 import MagicString from "magic-string";
 import { parse } from "node-html-parser";
 
-function enc(str) {
+import type { Plugin, UserConfig } from "vite";
+
+interface HeadElement {
+	type: string;
+	props: Record<string, string>;
+	children?: string;
+}
+
+interface Head {
+	lang: string;
+	title: string;
+	elements: Set<HeadElement>;
+}
+
+interface PrerenderedRoute {
+	url: string;
+	_discoveredBy?: PrerenderedRoute;
+}
+
+function enc(str: string) {
 	return str
 		.replace(/&/g, "&amp;")
 		.replace(/"/g, "&quot;")
@@ -12,61 +32,68 @@ function enc(str) {
 		.replace(/>/g, "&gt;");
 }
 
-/**
- * @param {object} [options]
- * @param {string} [options.prerenderScript=index] - Path to the script that exports a `prerender` function
- * @returns {import('vite').Plugin}
- */
-export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
-	const preloadHelperId = "\0vite/preload-helper";
+interface PrerenderPluginOptions {
+	prerenderScript?: string;
+	additionalPrerenderRoutes?: string[];
+}
 
-	prerenderScript = prerenderScript ?? "index";
+export function PrerenderPlugin({
+	prerenderScript,
+	additionalPrerenderRoutes,
+}: PrerenderPluginOptions = {}): Plugin {
+	const preloadHelperId = "\0vite/preload-helper";
+	let viteConfig: UserConfig = {};
+
+	additionalPrerenderRoutes ||= [];
 
 	/**
-	 * @param {import('vite').Rollup.InputOptions} opts
+	 * Retrieves the last, non-external script from the entry HTML document to use as
+	 * an additional input for Rollup. Hopefully this contains the user's `prerender()`
+	 * function.
 	 */
-	const getEntryScript = async opts => {
+	const guessPrerenderScriptFromHTML = async (
+		input: string | string[] | { [entryAlias: string]: string },
+	) => {
 		const entryHtml =
-			typeof opts.input === "string"
-				? opts.input
-				: Array.isArray(opts.input)
-				? opts.input.find(i => /html$/.test(i))
-				: Object.values(opts.input).find(i => /html$/.test(i));
+			typeof input === "string"
+				? input
+				: Array.isArray(input)
+				? input.find(i => /html$/.test(i))
+				: Object.values(input).find(i => /html$/.test(i));
+
+		if (!entryHtml) throw new Error("Unable to detect entry HTML file.");
 
 		const htmlDoc = parse(await fs.readFile(entryHtml, "utf-8"));
-
 		const scripts = htmlDoc
 			.getElementsByTagName("script")
 			.map(s => s.getAttribute("src"))
-			.filter(src => !/^https:/.test(src));
+			.filter(src => src && !/^https:/.test(src));
 
-		const entryScript = scripts.find(src => {
-			if (prerenderScript === "index") {
-				if (/index\.[tj]sx?$/.test(src)) return true;
-			} else if (src.endsWith(prerenderScript)) return true;
-			return false;
-		});
+		const entryScript = scripts.reverse()[0];
 
-		if (!entryScript) {
-			throw new Error(`Unable to detect entrypoint in your index.html.`);
-		}
+		if (!entryScript) throw new Error("Unable to detect local entry script");
 
-		return path.join(process.cwd(), entryScript);
+		return path.join(process.cwd(), viteConfig.root ?? "", entryScript);
 	};
 
 	return {
 		name: "headless-prerender",
 		apply: "build",
 		enforce: "post",
+		config(config) {
+			viteConfig = config;
+		},
 		async options(opts) {
-			const entryScript = await getEntryScript(opts);
+			if (!prerenderScript) {
+				prerenderScript = await guessPrerenderScriptFromHTML(opts.input);
+			}
 
 			opts.input =
 				typeof opts.input === "string"
-					? [opts.input, entryScript]
+					? [opts.input, prerenderScript]
 					: Array.isArray(opts.input)
-					? [...opts.input, entryScript]
-					: { ...opts.input, prerenderEntry: entryScript };
+					? [...opts.input, prerenderScript]
+					: { ...opts.input, prerenderEntry: prerenderScript };
 			opts.preserveEntrySignatures = "allow-extension";
 		},
 		transform(code, id) {
@@ -88,13 +115,17 @@ export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
 			}
 		},
 		async generateBundle(_opts, bundle) {
-			globalThis.location = /** @type {object} */ ({});
-			globalThis.self = /** @type {any} */ (globalThis);
+			// @ts-ignore
+			globalThis.location = {};
+			// @ts-ignore
+			globalThis.self = globalThis;
 
 			// Grab the generated HTML file, which we'll use as a template:
 			const tpl = bundle["index.html"].source;
 			let htmlDoc = parse(tpl);
 
+			// Create a tmp dir to allow importing & consuming the built modules, before Rollup normally
+			// writes them to the disk
 			const tmpDir = await fs.mkdtemp(
 				path.join(os.tmpdir(), "headless-prerender-"),
 			);
@@ -103,7 +134,7 @@ export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
 				JSON.stringify({ type: "module" }),
 			);
 
-			let entryScript;
+			let prerenderEntry;
 			const outputs = Object.keys(bundle);
 			for (const output of outputs) {
 				if (!/\.js$/.test(output)) continue;
@@ -114,20 +145,19 @@ export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
 				);
 
 				if (bundle[output].exports?.includes("prerender")) {
-					entryScript = bundle[output];
+					prerenderEntry = bundle[output];
 					break;
 				}
 			}
 
-			/** @typedef {{ type: string, props: Record<string, string>, children?: string } | string | null} HeadElement */
+			let head: Head = { lang: "", title: "", elements: new Set() };
 
-			/**
-			 * @type {{ lang: string, title: string, elements: Set<HeadElement>}}
-			 */
-			let head = { lang: "", title: "", elements: new Set() };
+			if (!prerenderEntry) {
+				console.log("Cannot detect module with `prerender` export");
+			}
 
 			const m = await import(
-				`file://${path.join(tmpDir, path.basename(entryScript.fileName))}`
+				`file://${path.join(tmpDir, path.basename(prerenderEntry.fileName))}`
 			);
 			const prerender = m.prerender;
 
@@ -136,11 +166,9 @@ export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
 				console.log("Detected `prerender` export, but it is not a function.");
 			}
 
-			/**
-			 * @param {HeadElement|HeadElement[]|Set<HeadElement>} element
-			 * @returns {string} html
-			 */
-			function serializeElement(element) {
+			function serializeElement(
+				element: HeadElement | HeadElement[] | Set<HeadElement>,
+			): string {
 				if (element == null) return "";
 				if (typeof element !== "object") return String(element);
 				if (Array.isArray(element))
@@ -166,11 +194,9 @@ export function HeadlessPrerenderPlugin({ prerenderScript } = {}) {
 
 			// We start by pre-rendering the home page.
 			// Links discovered during pre-rendering get pushed into the list of routes.
-			const seen = new Set(["/"]);
+			const seen = new Set(["/", ...additionalPrerenderRoutes]);
 
-			/** @typedef {{ url: string, _discoveredBy?: PrerenderedRoute }} PrerenderedRoute */
-			/** @type {PrerenderedRoute[]} */
-			let routes = [...seen].map(link => ({ url: link }));
+			let routes: PrerenderedRoute[] = [...seen].map(link => ({ url: link }));
 
 			for (const route of routes) {
 				if (!route.url) continue;
