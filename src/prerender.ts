@@ -54,12 +54,13 @@ export function PrerenderPlugin({
 	const guessPrerenderScriptFromHTML = async (
 		input: string | string[] | { [entryAlias: string]: string },
 	) => {
+		// prettier-ignore
 		const entryHtml =
 			typeof input === "string"
 				? input
 				: Array.isArray(input)
-				? input.find(i => /html$/.test(i))
-				: Object.values(input).find(i => /html$/.test(i));
+					? input.find(i => /html$/.test(i))
+					: Object.values(input).find(i => /html$/.test(i));
 
 		if (!entryHtml) throw new Error("Unable to detect entry HTML file.");
 
@@ -88,12 +89,13 @@ export function PrerenderPlugin({
 				prerenderScript = await guessPrerenderScriptFromHTML(opts.input);
 			}
 
+			// prettier-ignore
 			opts.input =
 				typeof opts.input === "string"
 					? [opts.input, prerenderScript]
 					: Array.isArray(opts.input)
-					? [...opts.input, prerenderScript]
-					: { ...opts.input, prerenderEntry: prerenderScript };
+						? [...opts.input, prerenderScript]
+						: { ...opts.input, prerenderEntry: prerenderScript };
 			opts.preserveEntrySignatures = "allow-extension";
 		},
 		// Injects a window check into Vite's preload helper, instantly resolving
