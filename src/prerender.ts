@@ -143,7 +143,6 @@ export function PrerenderPlugin({
 
 				if (bundle[output].exports?.includes("prerender")) {
 					prerenderEntry = bundle[output];
-					break;
 				}
 			}
 
