@@ -116,6 +116,16 @@ function preactPlugin({
 		enforce: "pre",
 		config() {
 			return {
+				build: {
+					rollupOptions: {
+						onwarn(warning, warn) {
+							// Silence Rollup's module-level directive warnings -- they're likely
+							// to all come from `node_modules` (RSCs) and won't be actionable.
+							if (warning.code === "MODULE_LEVEL_DIRECTIVE") return;
+							warn(warning);
+						},
+					},
+				},
 				optimizeDeps: {
 					include: ["preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
