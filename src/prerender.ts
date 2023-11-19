@@ -46,7 +46,7 @@ function serializeElement(
 	let s = `<${type}`;
 	const props = element.props || {};
 	let children = element.children;
-	for (const prop of Object.keys(props).sort()) {
+	for (const prop of Object.keys(props)) {
 		const value = props[prop];
 		// Filter out empty values:
 		if (value == null) continue;
