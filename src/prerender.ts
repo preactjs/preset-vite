@@ -179,9 +179,7 @@ export function PrerenderPlugin({
 			let head: Head = { lang: "", title: "", elements: new Set() };
 
 			if (!prerenderEntry) {
-				// TODO: Figure out better error message / handling here
-				console.log("Cannot detect module with `prerender` export");
-				return;
+				this.error("Cannot detect module with `prerender` export");
 			}
 
 			const m = await import(
@@ -190,9 +188,7 @@ export function PrerenderPlugin({
 			const prerender = m.prerender;
 
 			if (typeof prerender !== "function") {
-				// TODO: Figure out better error message / handling here
-				console.log("Detected `prerender` export, but it is not a function.");
-				return;
+				this.error("Detected `prerender` export, but it is not a function");
 			}
 
 			// We start by pre-rendering the home page.
