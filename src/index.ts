@@ -59,7 +59,7 @@ export interface PreactPluginOptions {
 		/**
 		 * Additional routes that should be prerendered
 		 */
-		additionalRoutes?: string[];
+		additionalPrerenderRoutes?: string[];
 	};
 
 	/**
