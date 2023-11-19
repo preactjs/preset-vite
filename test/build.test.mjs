@@ -20,4 +20,6 @@ test("builds demo successfully", async () => {
 	assert.match(outputHtml, /Prerendered Preact App/);           // Checks head.title
 	assert.match(outputHtml, /This is a prerendered Preact app/); // Checks head.elements
 	assert.match(outputHtml, /Hello from Preact/);                // Checks body
+
+	assert.doesNotThrow(async () => await fs.access(dir("demo/dist/404/index.html")));
 });
