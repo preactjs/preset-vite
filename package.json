@@ -54,6 +54,7 @@
 		"@types/node": "^14.14.33",
 		"@types/resolve": "^1.20.1",
 		"lint-staged": "^10.5.4",
+		"preact": "^10.19.2",
 		"prettier": "^2.2.1",
 		"rimraf": "^3.0.2",
 		"simple-git-hooks": "^2.0.2",
@@ -62,7 +63,7 @@
 		"vite": "^2.6.7"
 	},
 	"lint-staged": {
-		"**/*.{js,jsx,ts,tsx,yml}": [
+		"**/*.{js,jsx,ts,tsx,yml,json}": [
 			"prettier --write"
 		]
 	},
