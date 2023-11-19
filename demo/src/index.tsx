@@ -1,4 +1,10 @@
-import { LocationProvider, Router, Route, hydrate, prerender as ssr } from "preact-iso";
+import {
+	LocationProvider,
+	Router,
+	Route,
+	hydrate,
+	prerender as ssr,
+} from "preact-iso";
 
 import { Header } from "./components/Header.jsx";
 import { Home } from "./pages/Home/index.jsx";
@@ -22,5 +28,22 @@ export function App() {
 hydrate(<App />);
 
 export async function prerender() {
-	return await ssr(<App />);
+	const { html, links } = await ssr(<App />);
+	return {
+		html,
+		links,
+		head: {
+			lang: "en",
+			title: "Prerendered Preact App",
+			elements: new Set([
+				{
+					type: "meta",
+					props: {
+						name: "description",
+						content: "This is a prerendered Preact app",
+					},
+				},
+			]),
+		},
+	};
 }

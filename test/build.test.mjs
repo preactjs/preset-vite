@@ -16,5 +16,8 @@ test("builds demo successfully", async () => {
 	);
 
 	const outputHtml = await fs.readFile(dir("demo/dist/index.html"), "utf-8");
-	assert.match(outputHtml, /Hello from Preact/);
+	assert.match(outputHtml, /lang="en"/);                        // Checks head.lang
+	assert.match(outputHtml, /Prerendered Preact App/);           // Checks head.title
+	assert.match(outputHtml, /This is a prerendered Preact app/); // Checks head.elements
+	assert.match(outputHtml, /Hello from Preact/);                // Checks body
 });
