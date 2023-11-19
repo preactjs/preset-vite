@@ -129,7 +129,9 @@ export function PrerenderPlugin({
 		// Injects a window check into Vite's preload helper, instantly resolving
 		// the module rather than attempting to add a <link> to the document.
 		transform(code, id) {
-			if (id.endsWith(preloadHelperId)) {
+			// Vite keeps changing up the ID, best we can do for cross-version
+			// compat is an `includes`
+			if (id.includes(preloadHelperId)) {
 				const s = new MagicString(code);
 				s.replace(
 					`deps.length === 0`,
