@@ -7,6 +7,10 @@ import { parse } from "node-html-parser";
 
 import type { Plugin, UserConfig } from "vite";
 
+// Vite re-exports Rollup's type defs in newer versions,
+// merge into above type import when we bump the Vite devDep
+import type { InputOption, OutputAsset, OutputChunk } from "rollup";
+
 interface HeadElement {
 	type: string;
 	props: Record<string, string>;
@@ -32,6 +36,31 @@ function enc(str: string) {
 		.replace(/>/g, "&gt;");
 }
 
+function serializeElement(
+	element: HeadElement | HeadElement[] | string,
+): string {
+	if (element == null) return "";
+	if (typeof element !== "object") return String(element);
+	if (Array.isArray(element)) return element.map(serializeElement).join("");
+	const type = element.type;
+	let s = `<${type}`;
+	const props = element.props || {};
+	let children = element.children;
+	for (const prop of Object.keys(props).sort()) {
+		const value = props[prop];
+		// Filter out empty values:
+		if (value == null) continue;
+		if (prop === "children" || prop === "textContent") children = value;
+		else s += ` ${prop}="${enc(value)}"`;
+	}
+	s += ">";
+	if (!/link|meta|base/.test(type)) {
+		if (children) s += serializeElement(children);
+		s += `</${type}>`;
+	}
+	return s;
+}
+
 interface PrerenderPluginOptions {
 	prerenderScript?: string;
 	additionalPrerenderRoutes?: string[];
@@ -51,9 +80,7 @@ export function PrerenderPlugin({
 	 * an additional input for Rollup. Hopefully this contains the user's `prerender()`
 	 * function.
 	 */
-	const guessPrerenderScriptFromHTML = async (
-		input: string | string[] | { [entryAlias: string]: string },
-	) => {
+	const guessPrerenderScriptFromHTML = async (input: InputOption) => {
 		// prettier-ignore
 		const entryHtml =
 			typeof input === "string"
@@ -85,6 +112,7 @@ export function PrerenderPlugin({
 			viteConfig = config;
 		},
 		async options(opts) {
+			if (!opts.input) return;
 			if (!prerenderScript) {
 				prerenderScript = await guessPrerenderScriptFromHTML(opts.input);
 			}
@@ -120,11 +148,11 @@ export function PrerenderPlugin({
 			globalThis.self = globalThis;
 
 			// Grab the generated HTML file, which we'll use as a template:
-			const tpl = bundle["index.html"].source;
+			const tpl = (bundle["index.html"] as OutputAsset).source as string;
 			let htmlDoc = parse(tpl);
 
-			// Create a tmp dir to allow importing & consuming the built modules, before Rollup normally
-			// writes them to the disk
+			// Create a tmp dir to allow importing & consuming the built modules, before
+			// Rollup writes them to the disk
 			const tmpDir = await fs.mkdtemp(
 				path.join(os.tmpdir(), "headless-prerender-"),
 			);
@@ -140,10 +168,10 @@ export function PrerenderPlugin({
 
 				await fs.writeFile(
 					path.join(tmpDir, path.basename(output)),
-					bundle[output].code,
+					(bundle[output] as OutputChunk).code,
 				);
 
-				if (bundle[output].exports?.includes("prerender")) {
+				if ((bundle[output] as OutputChunk).exports?.includes("prerender")) {
 					prerenderEntry = bundle[output];
 				}
 			}
@@ -151,7 +179,9 @@ export function PrerenderPlugin({
 			let head: Head = { lang: "", title: "", elements: new Set() };
 
 			if (!prerenderEntry) {
+				// TODO: Figure out better error message / handling here
 				console.log("Cannot detect module with `prerender` export");
+				return;
 			}
 
 			const m = await import(
@@ -162,37 +192,12 @@ export function PrerenderPlugin({
 			if (typeof prerender !== "function") {
 				// TODO: Figure out better error message / handling here
 				console.log("Detected `prerender` export, but it is not a function.");
-			}
-
-			function serializeElement(
-				element: HeadElement | HeadElement[] | Set<HeadElement>,
-			): string {
-				if (element == null) return "";
-				if (typeof element !== "object") return String(element);
-				if (Array.isArray(element))
-					return element.map(serializeElement).join("");
-				const type = element.type;
-				let s = `<${type}`;
-				const props = element.props || {};
-				let children = element.children;
-				for (const prop of Object.keys(props).sort()) {
-					const value = props[prop];
-					// Filter out empty values:
-					if (value == null) continue;
-					if (prop === "children" || prop === "textContent") children = value;
-					else s += ` ${prop}="${enc(value)}"`;
-				}
-				s += ">";
-				if (!/link|meta|base/.test(type)) {
-					if (children) s += serializeElement(children);
-					s += `</${type}>`;
-				}
-				return s;
+				return;
 			}
 
 			// We start by pre-rendering the home page.
 			// Links discovered during pre-rendering get pushed into the list of routes.
-			const seen = new Set(["/", ...additionalPrerenderRoutes]);
+			const seen = new Set(["/", ...additionalPrerenderRoutes!]);
 
 			let routes: PrerenderedRoute[] = [...seen].map(link => ({ url: link }));
 
@@ -209,6 +214,7 @@ export function PrerenderPlugin({
 				const u = new URL(route.url, "http://localhost");
 				for (let i in u) {
 					try {
+						// @ts-ignore
 						globalThis.location[i] = String(u[i]);
 					} catch {}
 				}
@@ -243,36 +249,38 @@ export function PrerenderPlugin({
 				}
 
 				const htmlHead = htmlDoc.querySelector("head");
+				if (htmlHead) {
+					if (head.title) {
+						const htmlTitle = htmlHead.querySelector("title");
+						htmlTitle
+							? htmlTitle.set_content(enc(head.title))
+							: htmlHead.insertAdjacentHTML(
+									"afterbegin",
+									`<title>${enc(head.title)}</title>`,
+							  );
+					}
 
-				if (head.title) {
-					const htmlTitle = htmlHead.querySelector("title");
-					htmlTitle
-						? htmlTitle.set_content(enc(head.title))
-						: htmlHead.insertAdjacentHTML(
-								"afterbegin",
-								`<title>${enc(head.title)}</title>`,
-						  );
-				}
+					if (head.lang) {
+						htmlDoc.querySelector("html")!.setAttribute("lang", enc(head.lang));
+					}
 
-				if (head.lang) {
-					htmlDoc.querySelector("html").setAttribute("lang", enc(head.lang));
-				}
-
-				if (head.elements) {
-					// Inject HTML links at the end of <head> for any stylesheets injected during rendering of the page:
-					htmlHead.insertAdjacentHTML(
-						"beforeend",
-						Array.from(
-							new Set(Array.from(head.elements).map(serializeElement)),
-						).join(""),
-					);
+					if (head.elements) {
+						// Inject HTML links at the end of <head> for any stylesheets injected during rendering of the page:
+						htmlHead.insertAdjacentHTML(
+							"beforeend",
+							Array.from(
+								new Set(Array.from(head.elements).map(serializeElement)),
+							).join(""),
+						);
+					}
 				}
 
 				// Inject pre-rendered HTML into the start of <body>:
-				htmlDoc.querySelector("body").insertAdjacentHTML("afterbegin", body);
+				htmlDoc.querySelector("body")?.insertAdjacentHTML("afterbegin", body);
 
 				// Add generated HTML to compilation:
-				if (route.url === "/") bundle["index.html"].source = htmlDoc.toString();
+				if (route.url === "/")
+					(bundle["index.html"] as OutputAsset).source = htmlDoc.toString();
 				else
 					this.emitFile({
 						type: "asset",
