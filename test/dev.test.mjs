@@ -28,7 +28,7 @@ describe("dev server", async () => {
 	it(
 		"serves src/main.tsx",
 		wrap(async () => {
-			const mainURL = new URL("/src/main.tsx", devServerURL);
+			const mainURL = new URL("/src/index.tsx", devServerURL);
 			const res = await fetch(mainURL);
 			if (!res.ok) {
 				const body = await res.text();
