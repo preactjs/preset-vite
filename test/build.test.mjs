@@ -16,10 +16,13 @@ test("builds demo successfully", async () => {
 	);
 
 	const outputHtml = await fs.readFile(dir("demo/dist/index.html"), "utf-8");
-	assert.match(outputHtml, /lang="en"/);                        // Checks head.lang
-	assert.match(outputHtml, /Prerendered Preact App/);           // Checks head.title
-	assert.match(outputHtml, /This is a prerendered Preact app/); // Checks head.elements
-	assert.match(outputHtml, /Hello from Preact/);                // Checks body
+	assert.match(outputHtml, /Get Started building Vite-powered Preact Apps/);
 
+	// Head API
+	assert.match(outputHtml, /<html lang="en">/);
+	assert.match(outputHtml, /<title>Prerendered Preact App<\/title>/);
+	assert.match(outputHtml, /<meta name="description" content="This is a prerendered Preact app">/);
+
+	// `additionalPrerenderRoutes` config option
 	assert.doesNotThrow(async () => await fs.access(dir("demo/dist/404/index.html")));
 });
