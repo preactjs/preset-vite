@@ -1,4 +1,5 @@
 import { ReactComponent } from "../../components/Compat";
+import { LocalFetch } from "../../components/LocalFetch";
 
 import preactLogo from "../../assets/preact.svg";
 import "./style.css";
@@ -11,6 +12,7 @@ export function Home() {
 			</a>
 			<h1>Get Started building Vite-powered Preact Apps </h1>
 			<ReactComponent />
+			<LocalFetch />
 			<section>
 				<Resource
 					title="Learn Preact"

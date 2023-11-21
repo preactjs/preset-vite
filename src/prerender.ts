@@ -149,6 +149,25 @@ export function PrerenderPlugin({
 			// @ts-ignore
 			globalThis.self = globalThis;
 
+			// Local, fs-based fetch implementation for prerendering
+			const nodeFetch = globalThis.fetch;
+			// @ts-ignore
+			globalThis.fetch = async (url: string, opts: RequestInit | undefined) => {
+				if (/^\//.test(url)) {
+					const text = () =>
+						fs.readFile(
+							`${path.join(
+								viteConfig.root,
+								viteConfig.build.outDir,
+							)}/${url.replace(/^\//, "")}`,
+							"utf-8",
+						);
+					return { text, json: () => text().then(JSON.parse) };
+				}
+
+				return nodeFetch(url, opts);
+			};
+
 			// Grab the generated HTML file, which we'll use as a template:
 			const tpl = (bundle["index.html"] as OutputAsset).source as string;
 			let htmlDoc = parse(tpl);
