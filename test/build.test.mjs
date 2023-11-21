@@ -23,6 +23,9 @@ test("builds demo successfully", async () => {
 	assert.match(outputHtml, /<title>Prerendered Preact App<\/title>/);
 	assert.match(outputHtml, /<meta name="description" content="This is a prerendered Preact app">/);
 
+	// Local Fetch
+	assert.match(outputHtml, /Local fetch works/);
+
 	// `additionalPrerenderRoutes` config option
 	assert.doesNotThrow(async () => await fs.access(dir("demo/dist/404/index.html")));
 });
