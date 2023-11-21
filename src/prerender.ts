@@ -5,7 +5,7 @@ import { promises as fs } from "node:fs";
 import MagicString from "magic-string";
 import { parse } from "node-html-parser";
 
-import type { Plugin, UserConfig } from "vite";
+import type { Plugin, ResolvedConfig } from "vite";
 
 // Vite re-exports Rollup's type defs in newer versions,
 // merge into above type import when we bump the Vite devDep
@@ -71,7 +71,7 @@ export function PrerenderPlugin({
 	additionalPrerenderRoutes,
 }: PrerenderPluginOptions = {}): Plugin {
 	const preloadHelperId = "vite/preload-helper";
-	let viteConfig: UserConfig = {};
+	let viteConfig = {} as ResolvedConfig;
 
 	additionalPrerenderRoutes ||= [];
 
@@ -101,14 +101,14 @@ export function PrerenderPlugin({
 
 		if (!entryScript) throw new Error("Unable to detect local entry script");
 
-		return path.join(process.cwd(), viteConfig.root ?? "", entryScript);
+		return path.join(viteConfig.root, entryScript);
 	};
 
 	return {
 		name: "headless-prerender",
 		apply: "build",
 		enforce: "post",
-		config(config) {
+		configResolved(config) {
 			viteConfig = config;
 		},
 		async options(opts) {
@@ -153,8 +153,8 @@ export function PrerenderPlugin({
 			const tpl = (bundle["index.html"] as OutputAsset).source as string;
 			let htmlDoc = parse(tpl);
 
-			// Create a tmp dir to allow importing & consuming the built modules, before
-			// Rollup writes them to the disk
+			// Create a tmp dir to allow importing & consuming the built modules,
+			// before Rollup writes them to the disk
 			const tmpDir = await fs.mkdtemp(
 				path.join(os.tmpdir(), "headless-prerender-"),
 			);
@@ -208,7 +208,7 @@ export function PrerenderPlugin({
 					outDir.endsWith(".html") ? "" : "index.html",
 				);
 
-				// Update `location` to current URL so routers can use things like location.pathname:
+				// Update `location` to current URL so routers can use things like `location.pathname`
 				const u = new URL(route.url, "http://localhost");
 				for (let i in u) {
 					try {
@@ -229,7 +229,7 @@ export function PrerenderPlugin({
 					for (let url of result.links) {
 						const parsed = new URL(url, "http://localhost");
 						url = parsed.pathname;
-						// ignore external links and one's we've already picked up
+						// ignore external links and ones we've already picked up
 						if (seen.has(url) || parsed.origin !== "http://localhost") continue;
 						seen.add(url);
 						routes.push({ url, _discoveredBy: route });
