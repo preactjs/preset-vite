@@ -1,9 +1,11 @@
 import path from "node:path";
 import os from "node:os";
+
 import { promises as fs } from "node:fs";
 
 import MagicString from "magic-string";
-import { parse } from "node-html-parser";
+import { parse as htmlParse } from "node-html-parser";
+import { parseAsync as moduleLexerParseAsync } from "rs-module-lexer";
 
 import type { Plugin, ResolvedConfig } from "vite";
 
@@ -76,11 +78,10 @@ export function PrerenderPlugin({
 	additionalPrerenderRoutes ||= [];
 
 	/**
-	 * Retrieves the last, non-external script from the entry HTML document to use as
-	 * an additional input for Rollup. Hopefully this contains the user's `prerender()`
-	 * function.
+	 * From the non-external scripts in entry HTML document, find the one (if any)
+	 * that provides a `prerender` export
 	 */
-	const guessPrerenderScriptFromHTML = async (input: InputOption) => {
+	const getPrerenderScriptFromHTML = async (input: InputOption) => {
 		// prettier-ignore
 		const entryHtml =
 			typeof input === "string"
@@ -89,15 +90,34 @@ export function PrerenderPlugin({
 					? input.find(i => /html$/.test(i))
 					: Object.values(input).find(i => /html$/.test(i));
 
-		if (!entryHtml) throw new Error("Unable to detect entry HTML file.");
+		if (!entryHtml) throw new Error("Unable to detect entry HTML");
 
-		const htmlDoc = parse(await fs.readFile(entryHtml, "utf-8"));
+		const htmlDoc = htmlParse(await fs.readFile(entryHtml, "utf-8"));
 		const scripts = htmlDoc
 			.getElementsByTagName("script")
 			.map(s => s.getAttribute("src"))
-			.filter(src => src && !/^https:/.test(src));
+			.filter((src): src is string => !!src && !/^https:/.test(src));
 
-		const entryScript = scripts.reverse()[0];
+		if (scripts.length === 0)
+			throw new Error("No local scripts found in entry HTML");
+
+		const { output } = await moduleLexerParseAsync({
+			input: await Promise.all(
+				scripts.map(async script => ({
+					filename: script,
+					code: await fs.readFile(path.join(viteConfig.root, script), "utf-8"),
+				})),
+			),
+		});
+
+		let entryScript;
+		for (const module of output) {
+			const entry = module.exports.find(exp => exp.n === "prerender");
+			if (entry) {
+				entryScript = module.filename;
+				break;
+			}
+		}
 
 		if (!entryScript) throw new Error("Unable to detect local entry script");
 
@@ -114,7 +134,7 @@ export function PrerenderPlugin({
 		async options(opts) {
 			if (!opts.input) return;
 			if (!prerenderScript) {
-				prerenderScript = await guessPrerenderScriptFromHTML(opts.input);
+				prerenderScript = await getPrerenderScriptFromHTML(opts.input);
 			}
 
 			// prettier-ignore
@@ -170,7 +190,7 @@ export function PrerenderPlugin({
 
 			// Grab the generated HTML file, which we'll use as a template:
 			const tpl = (bundle["index.html"] as OutputAsset).source as string;
-			let htmlDoc = parse(tpl);
+			let htmlDoc = htmlParse(tpl);
 
 			// Create a tmp dir to allow importing & consuming the built modules,
 			// before Rollup writes them to the disk
@@ -240,7 +260,7 @@ export function PrerenderPlugin({
 				if (result == null) continue;
 
 				// Reset HTML doc & head data
-				htmlDoc = parse(tpl);
+				htmlDoc = htmlParse(tpl);
 				head = { lang: "", title: "", elements: new Set() };
 
 				// Add any discovered links to the list of routes to pre-render:
