@@ -5,7 +5,7 @@ import { promises as fs } from "node:fs";
 
 import MagicString from "magic-string";
 import { parse as htmlParse } from "node-html-parser";
-import { parseAsync as moduleLexerParseAsync } from "rs-module-lexer";
+import rsModuleLexer from "rs-module-lexer";
 
 import type { Plugin, ResolvedConfig } from "vite";
 
@@ -101,7 +101,7 @@ export function PrerenderPlugin({
 		if (scripts.length === 0)
 			throw new Error("No local scripts found in entry HTML");
 
-		const { output } = await moduleLexerParseAsync({
+		const { output } = await rsModuleLexer.parseAsync({
 			input: await Promise.all(
 				scripts.map(async script => ({
 					filename: script,
