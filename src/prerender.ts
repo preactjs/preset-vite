@@ -119,7 +119,8 @@ export function PrerenderPlugin({
 			}
 		}
 
-		if (!entryScript) throw new Error("Unable to detect local entry script");
+		if (!entryScript)
+			throw new Error("Unable to detect prerender entry script");
 
 		return path.join(viteConfig.root, entryScript);
 	};
