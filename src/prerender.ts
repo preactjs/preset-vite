@@ -153,10 +153,18 @@ export function PrerenderPlugin({
 			// Vite keeps changing up the ID, best we can do for cross-version
 			// compat is an `includes`
 			if (id.includes(preloadHelperId)) {
+				// Through v5.0.4
+				// https://github.com/vitejs/vite/blob/b93dfe3e08f56cafe2e549efd80285a12a3dc2f0/packages/vite/src/node/plugins/importAnalysisBuild.ts#L95-L98
 				const s = new MagicString(code);
 				s.replace(
-					`deps.length === 0`,
-					`deps.length === 0 || typeof window === 'undefined'`,
+					`if (!__VITE_IS_MODERN__ || !deps || deps.length === 0) {`,
+					`if (!__VITE_IS_MODERN__ || !deps || deps.length === 0 || typeof window === 'undefined') {`,
+				);
+				// 5.0.5+
+				// https://github.com/vitejs/vite/blob/c902545476a4e7ba044c35b568e73683758178a3/packages/vite/src/node/plugins/importAnalysisBuild.ts#L93
+				s.replace(
+					`if (__VITE_IS_MODERN__ && deps && deps.length > 0) {`,
+					`if (__VITE_IS_MODERN__ && deps && deps.length > 0 && typeof window !== 'undefined') {`,
 				);
 				return {
 					code: s.toString(),
