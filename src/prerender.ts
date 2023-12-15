@@ -1,5 +1,4 @@
 import path from "node:path";
-import os from "node:os";
 
 import { promises as fs } from "node:fs";
 
@@ -203,17 +202,26 @@ export function PrerenderPlugin({
 
 			// Create a tmp dir to allow importing & consuming the built modules,
 			// before Rollup writes them to the disk
-			const tmpDir = await fs.mkdtemp(
-				path.join(os.tmpdir(), "headless-prerender-"),
+			const tmpDir = path.join(
+				viteConfig.root,
+				"node_modules",
+				"@preact/preset-vite",
+				"headless-prerender",
 			);
+			try {
+				await fs.rm(tmpDir, { recursive: true });
+			} catch (e: any) {
+				if (e.code !== "ENOENT") throw e;
+			}
+			await fs.mkdir(tmpDir, { recursive: true });
+
 			await fs.writeFile(
 				path.join(tmpDir, "package.json"),
 				JSON.stringify({ type: "module" }),
 			);
 
 			let prerenderEntry;
-			const outputs = Object.keys(bundle);
-			for (const output of outputs) {
+			for (const output of Object.keys(bundle)) {
 				if (!/\.js$/.test(output)) continue;
 
 				await fs.writeFile(
