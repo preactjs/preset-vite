@@ -25,7 +25,9 @@ export function App() {
 	);
 }
 
-hydrate(<App />);
+if (typeof window !== "undefined") {
+	hydrate(<App />, document.getElementById("app"));
+}
 
 export async function prerender() {
 	const { html, links } = await ssr(<App />);
