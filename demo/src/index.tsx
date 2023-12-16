@@ -34,6 +34,7 @@ export async function prerender() {
 	return {
 		html,
 		links,
+		selector: "#app",
 		head: {
 			lang: "en",
 			title: "Prerendered Preact App",

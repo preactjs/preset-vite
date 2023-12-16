@@ -329,8 +329,15 @@ export function PrerenderPlugin({
 					}
 				}
 
-				// Inject pre-rendered HTML into the start of <body>:
-				htmlDoc.querySelector("body")?.insertAdjacentHTML("afterbegin", body);
+				result.selector ??= "body";
+				const target = htmlDoc.querySelector(result.selector);
+				if (!target)
+					throw new Error(
+						result.selector == "body"
+							? "No prerender selector was specified and <body> does not exist in input HTML template"
+							: `Unable to detect prerender selector "${result.selector}" in input HTML template`,
+					);
+				target.insertAdjacentHTML("afterbegin", body);
 
 				// Add generated HTML to compilation:
 				if (route.url === "/")
