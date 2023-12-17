@@ -329,13 +329,13 @@ export function PrerenderPlugin({
 					}
 				}
 
-				result.selector ??= "body";
-				const target = htmlDoc.querySelector(result.selector);
+				result.renderTarget ??= "body";
+				const target = htmlDoc.querySelector(result.renderTarget);
 				if (!target)
 					throw new Error(
-						result.selector == "body"
-							? "No prerender selector was specified and <body> does not exist in input HTML template"
-							: `Unable to detect prerender selector "${result.selector}" in input HTML template`,
+						result.renderTarget == "body"
+							? "No prerender renderTarget was specified and <body> does not exist in input HTML template"
+							: `Unable to detect prerender renderTarget "${result.selector}" in input HTML template`,
 					);
 				target.insertAdjacentHTML("afterbegin", body);
 
