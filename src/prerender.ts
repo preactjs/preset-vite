@@ -222,7 +222,7 @@ export function PrerenderPlugin({
 
 			let prerenderEntry;
 			for (const output of Object.keys(bundle)) {
-				if (!/\.js$/.test(output)) continue;
+				if (!/\.js$/.test(output) || bundle[output].type !== "chunk") continue;
 
 				await fs.writeFile(
 					path.join(tmpDir, path.basename(output)),
