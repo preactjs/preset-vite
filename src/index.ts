@@ -175,7 +175,7 @@ function preactPlugin({
 							importSource: jsxImportSource ?? "preact",
 						},
 					],
-					...(config.isProduction ? [] : ["babel-plugin-transform-hook-names"]),
+					...(devToolsEnabled && !config.isProduction ? ["babel-plugin-transform-hook-names"] : []),
 				],
 				sourceMaps: true,
 				inputSourceMap: false as any,
