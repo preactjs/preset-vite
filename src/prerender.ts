@@ -253,9 +253,9 @@ export function PrerenderPlugin({
 
 					This ${
 						isReferenceError ? "is most likely" : "could be"
-					} caused by using DOM/Web APIs
-					which are not available to the prerendering process which runs in Node. Consider wrapping
-					the offending code in a window check like so:
+					} caused by using DOM/Web APIs which are not available
+					available to the prerendering process which runs in Node. Consider
+					wrapping the offending code in a window check like so:
 
 					if (typeof window !== "undefined") {
 						// do something in browsers only
