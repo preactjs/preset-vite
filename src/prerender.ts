@@ -239,10 +239,31 @@ export function PrerenderPlugin({
 
 			let head: Head = { lang: "", title: "", elements: new Set() };
 
-			const m = await import(
-				`file://${path.join(tmpDir, path.basename(prerenderEntry.fileName))}`
-			);
-			const prerender = m.prerender;
+			let prerender;
+			try {
+				const m = await import(
+					`file://${path.join(tmpDir, path.basename(prerenderEntry!.fileName))}`
+				);
+				prerender = m.prerender;
+			} catch (e) {
+				const isReferenceError = e instanceof ReferenceError;
+
+				const message = `
+					${e}
+
+					This ${
+						isReferenceError ? "is most likely" : "could be"
+					} caused by using DOM/Web APIs
+					which are not available to the prerendering process which runs in Node. Consider wrapping
+					the offending code in a window check like so:
+
+					if (typeof window !== "undefined") {
+						// do something in browsers only
+					}
+				`.replace(/^\t{5}/gm, "");
+
+				this.error(message);
+			}
 
 			if (typeof prerender !== "function") {
 				this.error("Detected `prerender` export, but it is not a function");
