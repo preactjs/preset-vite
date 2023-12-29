@@ -125,7 +125,7 @@ export function PrerenderPlugin({
 	};
 
 	return {
-		name: "headless-prerender",
+		name: "preact:prerender",
 		apply: "build",
 		enforce: "post",
 		configResolved(config) {
@@ -233,12 +233,11 @@ export function PrerenderPlugin({
 					prerenderEntry = bundle[output];
 				}
 			}
-
-			let head: Head = { lang: "", title: "", elements: new Set() };
-
 			if (!prerenderEntry) {
 				this.error("Cannot detect module with `prerender` export");
 			}
+
+			let head: Head = { lang: "", title: "", elements: new Set() };
 
 			const m = await import(
 				`file://${path.join(tmpDir, path.basename(prerenderEntry.fileName))}`
@@ -266,7 +265,7 @@ export function PrerenderPlugin({
 
 				// Update `location` to current URL so routers can use things like `location.pathname`
 				const u = new URL(route.url, "http://localhost");
-				for (let i in u) {
+				for (const i in u) {
 					try {
 						// @ts-ignore
 						globalThis.location[i] = String(u[i]);

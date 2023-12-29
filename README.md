@@ -86,7 +86,6 @@ To prerender your app, you'll need to set `prerender.enabled` to `true` and expo
 import { render } from 'preact-render-to-string';
 
 export async function prerender(data) {
-    // Do prerendering here.
     const html = render(`<h1>hello world</h1>`);
 
     return {
