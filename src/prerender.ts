@@ -324,7 +324,7 @@ export function PrerenderPlugin({
 							"beforeend",
 							Array.from(
 								new Set(Array.from(head.elements).map(serializeElement)),
-							).join(""),
+							).join("\n"),
 						);
 					}
 				}
