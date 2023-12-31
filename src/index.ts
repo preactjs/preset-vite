@@ -57,6 +57,10 @@ export interface PreactPluginOptions {
 		 */
 		prerenderScript?: string;
 		/**
+		 * Query selector for specifying where to insert prerender result in your HTML template
+		 */
+		renderTarget?: string;
+		/**
 		 * Additional routes that should be prerendered
 		 */
 		additionalPrerenderRoutes?: string[];

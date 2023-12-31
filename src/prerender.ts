@@ -64,16 +64,19 @@ function serializeElement(
 
 interface PrerenderPluginOptions {
 	prerenderScript?: string;
+	renderTarget?: string;
 	additionalPrerenderRoutes?: string[];
 }
 
 export function PrerenderPlugin({
 	prerenderScript,
+	renderTarget,
 	additionalPrerenderRoutes,
 }: PrerenderPluginOptions = {}): Plugin {
 	const preloadHelperId = "vite/preload-helper";
 	let viteConfig = {} as ResolvedConfig;
 
+	renderTarget ||= "body";
 	additionalPrerenderRoutes ||= [];
 
 	/**
@@ -349,12 +352,11 @@ export function PrerenderPlugin({
 					}
 				}
 
-				result.renderTarget ??= "body";
-				const target = htmlDoc.querySelector(result.renderTarget);
+				const target = htmlDoc.querySelector(renderTarget!);
 				if (!target)
 					throw new Error(
 						result.renderTarget == "body"
-							? "No prerender renderTarget was specified and <body> does not exist in input HTML template"
+							? "`renderTarget` was not specified in plugin options and <body> does not exist in input HTML template"
 							: `Unable to detect prerender renderTarget "${result.selector}" in input HTML template`,
 					);
 				target.insertAdjacentHTML("afterbegin", body);

@@ -5,7 +5,11 @@ import preact from "../src/index";
 export default defineConfig({
 	plugins: [
 		preact({
-			prerender: { enabled: true, additionalPrerenderRoutes: ["/404"] },
+			prerender: {
+				enabled: true,
+				renderTarget: "#app",
+				additionalPrerenderRoutes: ["/404"],
+			},
 		}),
 	],
 });
