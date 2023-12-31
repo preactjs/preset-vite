@@ -354,7 +354,7 @@ export function PrerenderPlugin({
 
 				const target = htmlDoc.querySelector(renderTarget!);
 				if (!target)
-					throw new Error(
+					this.error(
 						result.renderTarget == "body"
 							? "`renderTarget` was not specified in plugin options and <body> does not exist in input HTML template"
 							: `Unable to detect prerender renderTarget "${result.selector}" in input HTML template`,
