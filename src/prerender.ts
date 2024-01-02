@@ -4,7 +4,6 @@ import { promises as fs } from "node:fs";
 
 import MagicString from "magic-string";
 import { parse as htmlParse } from "node-html-parser";
-import rsModuleLexer from "rs-module-lexer";
 
 import type { Plugin, ResolvedConfig } from "vite";
 
