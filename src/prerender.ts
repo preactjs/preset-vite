@@ -95,36 +95,21 @@ export function PrerenderPlugin({
 		if (!entryHtml) throw new Error("Unable to detect entry HTML");
 
 		const htmlDoc = htmlParse(await fs.readFile(entryHtml, "utf-8"));
-		const scripts = htmlDoc
+
+		const entryScriptTag = htmlDoc
 			.getElementsByTagName("script")
-			.map(s => s.getAttribute("src"))
-			.filter((src): src is string => !!src && !/^https:/.test(src));
+			.find(s => s.hasAttribute("prerender"));
 
-		if (scripts.length === 0)
-			throw new Error("No local scripts found in entry HTML");
-
-		const { output } = await rsModuleLexer.parseAsync({
-			input: await Promise.all(
-				scripts.map(async script => ({
-					filename: script,
-					code: await fs.readFile(path.join(viteConfig.root, script), "utf-8"),
-				})),
-			),
-		});
-
-		let entryScript;
-		for (const module of output) {
-			const entry = module.exports.find(exp => exp.n === "prerender");
-			if (entry) {
-				entryScript = module.filename;
-				break;
-			}
-		}
-
-		if (!entryScript)
+		if (!entryScriptTag)
 			throw new Error("Unable to detect prerender entry script");
 
-		return path.join(viteConfig.root, entryScript);
+		const entrySrc = entryScriptTag.getAttribute("src");
+		if (!entrySrc || /^https:/.test(entrySrc))
+			throw new Error(
+				"Prerender entry script must have a `src` attribute and be local",
+			);
+
+		return path.join(viteConfig.root, entrySrc);
 	};
 
 	return {
