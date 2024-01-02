@@ -6,6 +6,7 @@ import type { TransformOptions } from "@babel/core";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { createFilter, parseId } from "./utils.js";
+import { PrerenderPlugin } from "./prerender.js";
 import { transformAsync } from "@babel/core";
 
 export type BabelOptions = Omit<
@@ -44,6 +45,28 @@ export interface PreactPluginOptions {
 	reactAliasesEnabled?: boolean;
 
 	/**
+	 * Prerender plugin options
+	 */
+	prerender?: {
+		/**
+		 * Whether to prerender your app on build
+		 */
+		enabled: boolean;
+		/**
+		 * Absolute path to script containing an exported `prerender()` function
+		 */
+		prerenderScript?: string;
+		/**
+		 * Query selector for specifying where to insert prerender result in your HTML template
+		 */
+		renderTarget?: string;
+		/**
+		 * Additional routes that should be prerendered
+		 */
+		additionalPrerenderRoutes?: string[];
+	};
+
+	/**
 	 * RegExp or glob to match files to be transformed
 	 */
 	include?: FilterPattern;
@@ -78,6 +101,7 @@ function preactPlugin({
 	devToolsEnabled,
 	prefreshEnabled,
 	reactAliasesEnabled,
+	prerender,
 	include,
 	exclude,
 	babel,
@@ -110,6 +134,7 @@ function preactPlugin({
 	devToolsEnabled = devToolsEnabled ?? true;
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
+	prerender = prerender ?? { enabled: false };
 
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
@@ -221,6 +246,7 @@ function preactPlugin({
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
+		...(prerender.enabled ? [PrerenderPlugin(prerender)] : []),
 	];
 }
 
