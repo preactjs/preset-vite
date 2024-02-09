@@ -51,6 +51,7 @@ export default defineConfig({
 | `reactAliasesEnabled` | `boolean` | `true` | Aliases `react`, `react-dom` to `preact/compat` |
 | `babel` | `object` | | See [Babel configuration](#babel-configuration) |
 | `prerender` | `object` | | See [Prerendering configuration](#prerendering-configuration) |
+| `jsxOpts` | `object` | | See [Additional JSX configuration](#additional-jsx-configuration) |
 
 #### Babel configuration
 
@@ -112,6 +113,12 @@ export async function prerender(data) {
     };
 }
 ```
+
+#### Additional JSX configuration
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `throwIfNamespace` | `boolean` | `false` | Allows specifying throwIfNamespace for `@babel/plugin-transform-react-jsx` and `@babel/plugin-transform-react-jsx-development` |
 
 ## License
 
