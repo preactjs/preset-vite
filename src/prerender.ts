@@ -291,7 +291,7 @@ export function PrerenderPlugin({
 				if (result.links) {
 					for (let url of result.links) {
 						const parsed = new URL(url, "http://localhost");
-						url = parsed.pathname;
+						url = parsed.pathname.replace(/\/$/, '') || '/';
 						// ignore external links and ones we've already picked up
 						if (seen.has(url) || parsed.origin !== "http://localhost") continue;
 						seen.add(url);
