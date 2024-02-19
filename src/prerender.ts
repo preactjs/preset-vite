@@ -169,15 +169,20 @@ export function PrerenderPlugin({
 			// @ts-ignore
 			globalThis.fetch = async (url: string, opts: RequestInit | undefined) => {
 				if (/^\//.test(url)) {
-					const text = () =>
-						fs.readFile(
-							`${path.join(
-								viteConfig.root,
-								viteConfig.build.outDir,
-							)}/${url.replace(/^\//, "")}`,
-							"utf-8",
+					try {
+						return new Response(
+							await fs.readFile(
+								`${path.join(
+									viteConfig.root,
+									viteConfig.build.outDir,
+								)}/${url.replace(/^\//, "")}`,
+								"utf-8",
+							),
 						);
-					return { text, json: () => text().then(JSON.parse) };
+					} catch (e: any) {
+						if (e.code !== "ENOENT") throw e;
+						return new Response(null, { status: 404 });
+					}
 				}
 
 				return nodeFetch(url, opts);
@@ -291,7 +296,7 @@ export function PrerenderPlugin({
 				if (result.links) {
 					for (let url of result.links) {
 						const parsed = new URL(url, "http://localhost");
-						url = parsed.pathname.replace(/\/$/, '') || '/';
+						url = parsed.pathname.replace(/\/$/, "") || "/";
 						// ignore external links and ones we've already picked up
 						if (seen.has(url) || parsed.origin !== "http://localhost") continue;
 						seen.add(url);
