@@ -4,7 +4,8 @@ const cache = new Map();
 
 async function load(url: string) {
 	const res = await fetch(url);
-	return await res.text();
+	if (res.ok) return await res.text();
+	throw new Error(`Failed to fetch ${url}!`);
 }
 
 function useFetch(url: string) {
