@@ -118,7 +118,7 @@ export function PrerenderPlugin({
 		apply: "build",
 		enforce: "post",
 		configResolved(config) {
-			// Enable sourcemaps at least for prerendering for usable error messages
+			// Enable sourcemaps for generating more actionable error messages
 			config.build.sourcemap = true;
 
 			viteConfig = config;
