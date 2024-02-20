@@ -42,7 +42,9 @@
 		"kolorist": "^1.8.0",
 		"magic-string": "0.30.5",
 		"node-html-parser": "^6.1.10",
-		"resolve": "^1.22.8"
+		"resolve": "^1.22.8",
+		"source-map": "^0.7.4",
+		"stack-trace": "^1.0.0-pre2"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
@@ -50,11 +52,13 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.15.8",
+		"@types/babel__code-frame": "^7.0.6",
 		"@types/babel__core": "^7.1.14",
 		"@types/debug": "^4.1.5",
 		"@types/estree": "^0.0.50",
 		"@types/node": "^14.14.33",
 		"@types/resolve": "^1.20.1",
+		"@types/stack-trace": "^0.0.33",
 		"lint-staged": "^10.5.4",
 		"preact": "^10.19.2",
 		"preact-iso": "^2.3.2",
