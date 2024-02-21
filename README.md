@@ -82,12 +82,12 @@ preact({
 To prerender your app, you'll need to do three things:
 1. Enable prerendering in the plugin options
 2. Specify your render target, if you want the HTML to be inserted anywhere other than the `document.body`. This location likely should match `render()`, i.e., `render(<App />, document.querySelector('#app'))` -> `'#app'`
-4. Create and export a `prerender` function from a script. You could add this to your app entrypoint or create a completely separate file for it, either will work. See below for a usage example
-5. Specify where your `prerender` function is by either a) adding a `prerender` attribute to the script tag that contains it in your entry HTML (`<script prerender src="./my-prerender-script.js">`) or b) use the `prerenderScript` plugin option to specify the location with an absolute path
+4. Create and export a `prerender()` function from a script. You could add this to your app entrypoint or create a completely separate file for it, either will work. See below for a usage example
+5. Specify where your `prerender()` function is by either a) adding a `prerender` attribute to the script tag that contains it in your entry HTML (`<script prerender src="./my-prerender-script.js">`) or b) use the `prerenderScript` plugin option to specify the location with an absolute path
 
 The plugin simply calls the prerender function you provide so it's up to you to determine how your app should be prerendered. You'll likely want to use [`preact-render-to-string`](https://github.com/preactjs/preact-render-to-string), or a wrapper around it such as [`preact-iso`'s `prerender`](https://github.com/preactjs/preact-iso), but whatever you choose, the minimum you'll need to return is an object containing an `html` property with your HTML string which will then be inserted according to your `renderTarget`.
 
-Your `prerender` function can be asynchronous, so feel free to make HTTP requests to retrieve data (`fetch(...)`), read files from disk (`fs.readFile(...)`), or similar things to set up your app.
+Your `prerender()` function can be asynchronous, so feel free to make HTTP requests to retrieve data (`fetch(...)`), read files from disk (`fs.readFile(...)`), or similar things to set up your app.
 
 [For a full example implementation, see our demo](./demo/src/index.tsx)
 
