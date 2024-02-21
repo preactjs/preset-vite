@@ -79,7 +79,7 @@ preact({
 | `prerenderScript` | `string` | `undefined` | Absolute path to script containing exported `prerender()` function. If not provided, will try to find the prerender script in the scripts listed in your HTML entrypoint |
 | `additionalPrerenderRoutes` | `string[]` | `undefined` | Prerendering will crawl your site automatically, but you'd like to prerender some pages that may not be found (such as a `/404` page), use this option to specify them |
 
-To prerender your app, you'll need to do three things:
+To prerender your app, you'll need to do these things:
 1. Enable prerendering in the plugin options
 2. Specify your render target, if you want the HTML to be inserted anywhere other than the `document.body`. This location likely should match `render()`, i.e., `render(<App />, document.querySelector('#app'))` -> `'#app'`
 4. Create and export a `prerender()` function from a script. You could add this to your app entrypoint or create a completely separate file for it, either will work. See below for a usage example
