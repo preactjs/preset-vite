@@ -76,6 +76,7 @@ export function PrerenderPlugin({
 }: PrerenderPluginOptions = {}): Plugin {
 	const preloadHelperId = "vite/preload-helper";
 	let viteConfig = {} as ResolvedConfig;
+	let userEnabledSourceMaps: boolean | undefined;
 
 	renderTarget ||= "body";
 	additionalPrerenderRoutes ||= [];
@@ -118,6 +119,7 @@ export function PrerenderPlugin({
 		apply: "build",
 		enforce: "post",
 		configResolved(config) {
+			userEnabledSourceMaps = !!config.build.sourcemap;
 			// Enable sourcemaps for generating more actionable error messages
 			config.build.sourcemap = true;
 
@@ -402,6 +404,15 @@ export function PrerenderPlugin({
 						type: "asset",
 						fileName: assetName,
 						source: htmlDoc.toString(),
+					});
+			}
+		},
+		async writeBundle(_opts, bundle) {
+			if (!userEnabledSourceMaps) {
+				Object.keys(bundle)
+					.filter(f => /\.map$/.test(f))
+					.forEach(async f => {
+						fs.rm(path.join(viteConfig.root, viteConfig.build.outDir, f));
 					});
 			}
 		},
