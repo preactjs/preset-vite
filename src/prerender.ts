@@ -221,6 +221,11 @@ export function PrerenderPlugin({
 
 			let prerenderEntry: OutputChunk | undefined;
 			for (const output of Object.keys(bundle)) {
+				// Clean up source maps if the user didn't enable them themselves
+				if (/\.map$/.test(output) && !userEnabledSourceMaps) {
+					delete bundle[output];
+					continue;
+				}
 				if (!/\.js$/.test(output) || bundle[output].type !== "chunk") continue;
 
 				await fs.writeFile(
@@ -404,15 +409,6 @@ export function PrerenderPlugin({
 						type: "asset",
 						fileName: assetName,
 						source: htmlDoc.toString(),
-					});
-			}
-		},
-		async writeBundle(_opts, bundle) {
-			if (!userEnabledSourceMaps) {
-				Object.keys(bundle)
-					.filter(f => /\.map$/.test(f))
-					.forEach(async f => {
-						fs.rm(path.join(viteConfig.root, viteConfig.build.outDir, f));
 					});
 			}
 		},
