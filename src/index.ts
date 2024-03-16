@@ -167,12 +167,7 @@ function preactPlugin({
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
 
 			useBabel =
-				!config.isProduction ||
-				devToolsEnabled ||
-				!!babelOptions.plugins.length ||
-				!!babelOptions.presets.length ||
-				!!babelOptions.overrides.length ||
-				!!babelOptions.parserOpts.plugins.length;
+				!config.isProduction || devToolsEnabled || typeof babel !== "undefined";
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
