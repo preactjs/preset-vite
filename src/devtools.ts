@@ -7,12 +7,14 @@ import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
 
 export interface PreactDevtoolsPluginOptions {
-	injectInProd?: boolean;
+	devtoolsInProd?: boolean;
+	devToolsEnabled?: boolean;
 	shouldTransform: RollupFilter;
 }
 
 export function preactDevtoolsPlugin({
-	injectInProd = false,
+	devtoolsInProd,
+	devToolsEnabled,
 	shouldTransform,
 }: PreactDevtoolsPluginOptions): Plugin {
 	const log = debug("vite:preact-devtools");
@@ -37,6 +39,8 @@ export function preactDevtoolsPlugin({
 
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
+			devToolsEnabled =
+				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
 		},
 
 		resolveId(url, importer = "") {
@@ -58,8 +62,8 @@ export function preactDevtoolsPlugin({
 		transform(code, url) {
 			const { id } = parseId(url);
 
-			if (entry === id && (!config.isProduction || injectInProd)) {
-				const source = injectInProd ? "preact/devtools" : "preact/debug";
+			if (entry === id) {
+				const source = devToolsEnabled ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
 				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
