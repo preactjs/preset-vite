@@ -126,6 +126,7 @@ function preactPlugin({
 	babelOptions.parserOpts ||= {} as any;
 	babelOptions.parserOpts.plugins ||= [];
 
+	let useBabel: boolean;
 	const shouldTransform = createFilter(
 		include || [/\.[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -151,6 +152,10 @@ function preactPlugin({
 						},
 					},
 				},
+				esbuild: {
+					jsx: "automatic",
+					jsxImportSource: jsxImportSource ?? "preact",
+				},
 				optimizeDeps: {
 					include: ["preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
@@ -160,12 +165,20 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+
+			useBabel =
+				!config.isProduction ||
+				devToolsEnabled ||
+				!!babelOptions.plugins.length ||
+				!!babelOptions.presets.length ||
+				!!babelOptions.overrides.length ||
+				!!babelOptions.parserOpts.plugins.length;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
 			const { id } = parseId(url);
 
-			if (!shouldTransform(id)) return;
+			if (!useBabel || !shouldTransform(id)) return;
 
 			const parserPlugins = [
 				...baseParserOptions,
