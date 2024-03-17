@@ -131,7 +131,7 @@ function preactPlugin({
 		exclude || [/node_modules/],
 	);
 
-	devToolsEnabled = devToolsEnabled ?? true;
+	devtoolsInProd = devtoolsInProd ?? false;
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
@@ -158,6 +158,8 @@ function preactPlugin({
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
+			devToolsEnabled =
+				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
@@ -200,7 +202,7 @@ function preactPlugin({
 							importSource: jsxImportSource ?? "preact",
 						},
 					],
-					...(devToolsEnabled && !config.isProduction ? ["babel-plugin-transform-hook-names"] : []),
+					...(devToolsEnabled ? ["babel-plugin-transform-hook-names"] : []),
 				],
 				sourceMaps: true,
 				inputSourceMap: false as any,
@@ -235,14 +237,11 @@ function preactPlugin({
 			  ]
 			: []),
 		jsxPlugin,
-		...(devToolsEnabled
-			? [
-					preactDevtoolsPlugin({
-						injectInProd: devtoolsInProd,
-						shouldTransform,
-					}),
-			  ]
-			: []),
+		preactDevtoolsPlugin({
+			devtoolsInProd,
+			devToolsEnabled,
+			shouldTransform,
+		}),
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
