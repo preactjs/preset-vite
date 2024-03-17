@@ -62,8 +62,8 @@ export function preactDevtoolsPlugin({
 		transform(code, url) {
 			const { id } = parseId(url);
 
-			if (entry === id && devToolsEnabled) {
-				const source = devtoolsInProd ? "preact/devtools" : "preact/debug";
+			if (entry === id && (!config.isProduction || devToolsEnabled)) {
+				const source = config.isProduction ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
 				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
