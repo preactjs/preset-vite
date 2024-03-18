@@ -152,6 +152,7 @@ function preactPlugin({
 						},
 					},
 				},
+				// While this config is unconditional, it'll only be used if Babel is not
 				esbuild: {
 					jsx: "automatic",
 					jsxImportSource: jsxImportSource ?? "preact",
