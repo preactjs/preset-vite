@@ -165,7 +165,6 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
-
 			useBabel =
 				!config.isProduction || devToolsEnabled || typeof babel !== "undefined";
 		},
