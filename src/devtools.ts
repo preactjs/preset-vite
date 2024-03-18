@@ -7,13 +7,11 @@ import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
 
 export interface PreactDevtoolsPluginOptions {
-	devtoolsInProd?: boolean;
 	devToolsEnabled?: boolean;
 	shouldTransform: RollupFilter;
 }
 
 export function preactDevtoolsPlugin({
-	devtoolsInProd,
 	devToolsEnabled,
 	shouldTransform,
 }: PreactDevtoolsPluginOptions): Plugin {
@@ -39,8 +37,7 @@ export function preactDevtoolsPlugin({
 
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 
 		resolveId(url, importer = "") {
