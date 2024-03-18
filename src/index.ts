@@ -126,6 +126,7 @@ function preactPlugin({
 	babelOptions.parserOpts ||= {} as any;
 	babelOptions.parserOpts.plugins ||= [];
 
+	let useBabel: boolean;
 	const shouldTransform = createFilter(
 		include || [/\.[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -151,6 +152,11 @@ function preactPlugin({
 						},
 					},
 				},
+				// While this config is unconditional, it'll only be used if Babel is not
+				esbuild: {
+					jsx: "automatic",
+					jsxImportSource: jsxImportSource ?? "preact",
+				},
 				optimizeDeps: {
 					include: ["preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
@@ -160,12 +166,14 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			useBabel =
+				!config.isProduction || devToolsEnabled || typeof babel !== "undefined";
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
 			const { id } = parseId(url);
 
-			if (!shouldTransform(id)) return;
+			if (!useBabel || !shouldTransform(id)) return;
 
 			const parserPlugins = [
 				...baseParserOptions,
