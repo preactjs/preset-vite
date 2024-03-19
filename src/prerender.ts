@@ -4,7 +4,6 @@ import { promises as fs } from "node:fs";
 import MagicString from "magic-string";
 import { parse as htmlParse } from "node-html-parser";
 import { SourceMapConsumer } from "source-map";
-import { parse as StackTraceParse } from "stack-trace";
 import { codeFrameColumns } from "@babel/code-frame";
 
 import type { Plugin, ResolvedConfig } from "vite";
@@ -250,8 +249,8 @@ export function PrerenderPlugin({
 				);
 				prerender = m.prerender;
 			} catch (e) {
-				const stack = StackTraceParse(e as Error).find(s =>
-					s.getFileName().includes(tmpDir),
+				const stack = await import("stack-trace").then(({ parse }) =>
+					parse(e as Error).find(s => s.getFileName().includes(tmpDir)),
 				);
 
 				const isReferenceError = e instanceof ReferenceError;
