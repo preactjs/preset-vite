@@ -221,11 +221,19 @@ export function PrerenderPlugin({
 			let prerenderEntry: OutputChunk | undefined;
 			for (const output of Object.keys(bundle)) {
 				// Clean up source maps if the user didn't enable them themselves
-				if (/\.map$/.test(output) && !userEnabledSourceMaps) {
-					delete bundle[output];
-					continue;
+				if (!userEnabledSourceMaps) {
+					if (output.endsWith(".map")) {
+						delete bundle[output];
+						continue;
+					}
+					if (output.endsWith(".js") && bundle[output].type == "chunk") {
+						(bundle[output] as OutputChunk).code = (bundle[
+							output
+						] as OutputChunk).code.replace(/^\/\/#\ssourceMappingURL=.*$/, "");
+					}
 				}
-				if (!/\.js$/.test(output) || bundle[output].type !== "chunk") continue;
+				if (!output.endsWith(".js") || bundle[output].type !== "chunk")
+					continue;
 
 				await fs.writeFile(
 					path.join(tmpDir, path.basename(output)),
