@@ -229,7 +229,7 @@ export function PrerenderPlugin({
 					if (output.endsWith(".js") && bundle[output].type == "chunk") {
 						(bundle[output] as OutputChunk).code = (bundle[
 							output
-						] as OutputChunk).code.replace(/^\/\/#\ssourceMappingURL=.*$/, "");
+						] as OutputChunk).code.replace(/\n\/\/#\ssourceMappingURL=.*/, "");
 					}
 				}
 				if (!output.endsWith(".js") || bundle[output].type !== "chunk")
