@@ -99,7 +99,7 @@ function App() {
 }
 
 export async function prerender(data) {
-    const html = ssr(<App />);
+    const { html } = ssr(<App />);
 
     return {
         html,
