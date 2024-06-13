@@ -99,13 +99,13 @@ function App() {
 }
 
 export async function prerender(data) {
-    const { html } = ssr(<App />);
+    const { html, links: discoveredLinks } = ssr(<App />);
 
     return {
         html,
         // Optionally add additional links that should be
         // prerendered (if they haven't already been)
-        links: new Set(['/foo', '/bar']),
+        links: new Set([...discoveredLinks, '/foo', '/bar']),
         // Optionally configure and add elements to the `<head>` of
         // the prerendered HTML document
         head: {
