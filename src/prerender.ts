@@ -170,6 +170,12 @@ export function PrerenderPlugin({
 			// @ts-ignore
 			globalThis.self = globalThis;
 
+			// As of Vite 5.3.0-beta.0, Vite injects an undefined `__VITE_PRELOAD__` var
+			// Swapping in an empty array is fine as we have no need to preload whilst prerendering
+			// https://github.com/vitejs/vite/pull/16562
+			// @ts-ignore
+			globalThis.__VITE_PRELOAD__ = [];
+
 			// Local, fs-based fetch implementation for prerendering
 			const nodeFetch = globalThis.fetch;
 			// @ts-ignore
