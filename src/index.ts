@@ -128,7 +128,7 @@ function preactPlugin({
 
 	let useBabel: boolean;
 	const shouldTransform = createFilter(
-		include || [/\.[tj]sx?$/],
+		include || [/\.[cm]?[tj]sx?$/],
 		exclude || [/node_modules/],
 	);
 
