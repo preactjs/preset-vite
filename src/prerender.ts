@@ -345,7 +345,11 @@ export function PrerenderPlugin({
 				for (const i in u) {
 					try {
 						// @ts-ignore
-						globalThis.location[i] = String(u[i]);
+						globalThis.location[i] =
+							i === "toString"
+								? u[i].bind(u)
+								: // @ts-ignore
+								  String(u[i]);
 					} catch {}
 				}
 
