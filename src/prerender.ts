@@ -469,7 +469,7 @@ export function HTMLRoutingMiddlewarePlugin({
 					await fs.access(file);
 					req.url = url.pathname + "/index.html" + url.search;
 				} catch {
-					req.url = fallback ? fallback + "/index.html" : "/index.html";
+					req.url = (fallback || "") + "/index.html";
 				}
 
 				return next();
