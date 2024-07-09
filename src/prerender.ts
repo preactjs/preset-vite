@@ -431,3 +431,49 @@ export function PrerenderPlugin({
 		},
 	};
 }
+
+interface HTMLRoutingMiddlewareOptions {
+	fallback?: string;
+}
+
+/**
+ * Vite's preview server won't route to anything but `/index.html` without
+ * a file extension, e.g., `/tutorial` won't serve `/tutorial/index.html`.
+ * This leads to some surprises & hydration issues, so we'll fix it ourselves.
+ */
+export function HTMLRoutingMiddlewarePlugin({
+	fallback,
+}: HTMLRoutingMiddlewareOptions = {}): Plugin {
+	let outDir: string;
+
+	return {
+		name: "serve-prerendered-html",
+		configResolved(config) {
+			outDir = path.resolve(config.root, config.build.outDir);
+		},
+		configurePreviewServer(server) {
+			server.middlewares.use(async (req, _res, next) => {
+				if (!req.url) return next();
+
+				const url = new URL(req.url, `http://${req.headers.host}`);
+				// If URL has a file extension, bail
+				if (url.pathname != url.pathname.split(".").pop()) return next();
+
+				const file = path.join(
+					outDir,
+					url.pathname.split(path.posix.sep).join(path.sep),
+					"index.html",
+				);
+
+				try {
+					await fs.access(file);
+					req.url = url.pathname + "/index.html" + url.search;
+				} catch {
+					req.url = fallback ? fallback + "/index.html" : "/index.html";
+				}
+
+				return next();
+			});
+		},
+	};
+}
