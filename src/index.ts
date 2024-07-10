@@ -6,7 +6,7 @@ import type { TransformOptions } from "@babel/core";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { createFilter, parseId } from "./utils.js";
-import { PrerenderPlugin } from "./prerender.js";
+import { PrerenderPlugin, HTMLRoutingMiddlewarePlugin } from "./prerender.js";
 import { transformAsync } from "@babel/core";
 
 export type BabelOptions = Omit<
@@ -64,6 +64,14 @@ export interface PreactPluginOptions {
 		 * Additional routes that should be prerendered
 		 */
 		additionalPrerenderRoutes?: string[];
+		/**
+		 * Vite's preview server won't use our prerendered HTML by default, this middleware correct this
+		 */
+		previewMiddlewareEnabled?: boolean;
+		/**
+		 * Path to use as a fallback/404 route, i.e., `/404` or `/not-found`
+		 */
+		previewMiddlewareFallback?: string;
 	};
 
 	/**
@@ -254,6 +262,13 @@ function preactPlugin({
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
 		...(prerender.enabled ? [PrerenderPlugin(prerender)] : []),
+		...(prerender.previewMiddlewareEnabled
+			? [
+					HTMLRoutingMiddlewarePlugin({
+						fallback: prerender.previewMiddlewareFallback,
+					}),
+			  ]
+			: []),
 	];
 }
 
