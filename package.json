@@ -28,7 +28,10 @@
 		"preset"
 	],
 	"author": "The Preact Team (https://preactjs.com)",
-	"repository": "preactjs/preset-vite",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/preactjs/preset-vite.git"
+	},
 	"license": "MIT",
 	"files": [
 		"dist/"
