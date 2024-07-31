@@ -166,7 +166,7 @@ function preactPlugin({
 					jsxImportSource: jsxImportSource ?? "preact",
 				},
 				optimizeDeps: {
-					include: ["preact/jsx-runtime", "preact/jsx-dev-runtime"],
+					include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
 			};
 		},
