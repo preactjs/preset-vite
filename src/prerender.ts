@@ -190,7 +190,10 @@ export function PrerenderPlugin({
 									viteConfig.root,
 									viteConfig.build.outDir,
 								)}/${url.replace(/^\//, "")}`,
-								fetchEncoding === undefined ? "utf-8" : fetchEncoding,
+								{
+									encoding:
+										fetchEncoding === undefined ? "utf-8" : fetchEncoding,
+								},
 							),
 						);
 					} catch (e: any) {
