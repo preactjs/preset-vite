@@ -66,12 +66,14 @@ interface PrerenderPluginOptions {
 	prerenderScript?: string;
 	renderTarget?: string;
 	additionalPrerenderRoutes?: string[];
+	fetchEncoding?: BufferEncoding | null;
 }
 
 export function PrerenderPlugin({
 	prerenderScript,
 	renderTarget,
 	additionalPrerenderRoutes,
+	fetchEncoding,
 }: PrerenderPluginOptions = {}): Plugin {
 	const preloadHelperId = "vite/preload-helper";
 	let viteConfig = {} as ResolvedConfig;
@@ -188,7 +190,7 @@ export function PrerenderPlugin({
 									viteConfig.root,
 									viteConfig.build.outDir,
 								)}/${url.replace(/^\//, "")}`,
-								"utf-8",
+								fetchEncoding === undefined ? "utf-8" : fetchEncoding,
 							),
 						);
 					} catch (e: any) {

@@ -51,6 +51,7 @@ export default defineConfig({
 | `reactAliasesEnabled` | `boolean` | `true` | Aliases `react`, `react-dom` to `preact/compat` |
 | `babel` | `object` | | See [Babel configuration](#babel-configuration) |
 | `prerender` | `object` | | See [Prerendering configuration](#prerendering-configuration) |
+| `fetchEncoding` | `BufferEncoding \| null` | `"utf-8" ` | The encoding used when fetching local files during prerender only. Uses the same rules as [`fs.readFile`](https://nodejs.org/api/fs.html#fsreadfilepath-options-callback)'s `encoding` option. |
 
 #### Babel configuration
 
