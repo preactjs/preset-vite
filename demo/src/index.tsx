@@ -29,11 +29,12 @@ if (typeof window !== "undefined") {
 	hydrate(<App />, document.getElementById("app"));
 }
 
-export async function prerender() {
+export async function prerender(data) {
 	const { html, links } = await ssr(<App />);
 	return {
 		html,
 		links,
+		data: { url: data.url },
 		head: {
 			lang: "en",
 			title: "Prerendered Preact App",
