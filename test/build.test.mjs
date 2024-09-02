@@ -23,6 +23,12 @@ test("builds demo successfully", async () => {
 	assert.match(outputHtml, /<title>Prerendered Preact App<\/title>/);
 	assert.match(outputHtml, /<meta name="description" content="This is a prerendered Preact app">/);
 
+	// Prerender Data
+	assert.match(
+		outputHtml,
+		/<script type="application\/json" id="preact-prerender-data">{"url":"\/"}<\/script>/
+	);
+
 	// Local Fetch
 	assert.match(outputHtml, /Local fetch works/);
 

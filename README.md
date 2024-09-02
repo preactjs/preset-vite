@@ -108,6 +108,9 @@ export async function prerender(data) {
         // Optionally add additional links that should be
         // prerendered (if they haven't already been)
         links: new Set([...discoveredLinks, '/foo', '/bar']),
+        // Optional data to serialize into a script tag for use on the client:
+        //   <script type="application/json" id="preact-prerender-data">{"url":"/"}</script>
+        data: { url: data.url },
         // Optionally configure and add elements to the `<head>` of
         // the prerendered HTML document
         head: {
