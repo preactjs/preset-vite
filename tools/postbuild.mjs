@@ -8,10 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dir = path.join(__dirname, "..", "dist", "esm");
 
 for (const file of fs.readdirSync(dir)) {
-	const target = path.join(
-		dir,
-		path.basename(file, path.extname(file)) + ".mjs",
-	);
+	const ext = file.endsWith(".d.ts") ? ".mts" : ".mjs";
+	const target = path.join(dir, path.basename(file, path.extname(file)) + ext);
 
 	fs.renameSync(path.join(dir, file), target);
 

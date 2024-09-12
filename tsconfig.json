@@ -5,6 +5,7 @@
 		"esModuleInterop": true,
 		"module": "ESNext",
 		"moduleResolution": "Node",
+		"declaration": true,
 		"outDir": "dist/esm/"
 	},
 	"files": ["./src/index.ts"]
