@@ -10,7 +10,12 @@ import type { Plugin, ResolvedConfig } from "vite";
 
 // Vite re-exports Rollup's type defs in newer versions,
 // merge into above type import when we bump the Vite devDep
-import type { InputOption, OutputAsset, OutputChunk } from "rollup";
+import type {
+	InputOption,
+	OutputAsset,
+	OutputChunk,
+	OutputOptions,
+} from "rollup";
 
 interface HeadElement {
 	type: string;
@@ -74,6 +79,7 @@ export function PrerenderPlugin({
 	additionalPrerenderRoutes,
 }: PrerenderPluginOptions = {}): Plugin {
 	const preloadHelperId = "vite/preload-helper";
+	const preloadPolyfillId = "vite/modulepreload-polyfill";
 	let viteConfig = {} as ResolvedConfig;
 	let userEnabledSourceMaps: boolean | undefined;
 
@@ -123,6 +129,34 @@ export function PrerenderPlugin({
 			config.build.sourcemap = true;
 
 			viteConfig = config;
+
+			// With this plugin adding an additional input, Rollup/Vite tries to be smart
+			// and extract our prerender script (which is often their main bundle) to a separate
+			// chunk that the entry & prerender chunks can depend on. Unfortunately, this means the
+			// first script the browser loads is the module preload polyfill & a sync import of the main
+			// bundle. This is obviously less than ideal as the main bundle should be directly referenced
+			// by the user's HTML to speed up loading a bit.
+
+			// We're only going to alter the chunking behavior in the default cases, where the user and/or
+			// other plugins haven't already configured this. It'd be impossible to avoid breakages otherwise.
+			if (
+				(Array.isArray(config.build.rollupOptions.output) &&
+					(config.build.rollupOptions as OutputOptions[])?.length > 1) ||
+				(config.build.rollupOptions.output as OutputOptions)?.manualChunks
+			)
+				return;
+
+			config.build.rollupOptions.output ??= {};
+			(config.build.rollupOptions.output as OutputOptions).manualChunks = (
+				id: string,
+			) => {
+				if (
+					id.includes(prerenderScript as string) ||
+					id.includes(preloadPolyfillId)
+				) {
+					return "index";
+				}
+			};
 		},
 		async options(opts) {
 			if (!opts.input) return;
@@ -157,6 +191,22 @@ export function PrerenderPlugin({
 				s.replace(
 					`if (__VITE_IS_MODERN__ && deps && deps.length > 0) {`,
 					`if (__VITE_IS_MODERN__ && deps && deps.length > 0 && typeof window !== 'undefined') {`,
+				);
+				return {
+					code: s.toString(),
+					map: s.generateMap({ hires: true }),
+				};
+			} else if (id.includes(preloadPolyfillId)) {
+				const s = new MagicString(code);
+				// Replacement for `'link'` && `"link"` as the output from their tooling has
+				// differed over the years. Should be better than switching to regex.
+				s.replace(
+					`const relList = document.createElement('link').relList;`,
+					`if (typeof window === "undefined") return;\n  const relList = document.createElement('link').relList;`,
+				);
+				s.replace(
+					`const relList = document.createElement("link").relList;`,
+					`if (typeof window === "undefined") return;\n  const relList = document.createElement("link").relList;`,
 				);
 				return {
 					code: s.toString(),
