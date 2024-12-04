@@ -173,15 +173,15 @@ export function PrerenderPlugin({
 						: { ...opts.input, prerenderEntry: prerenderScript };
 			opts.preserveEntrySignatures = "allow-extension";
 		},
-		// Injects a window check into Vite's preload helper, instantly resolving
-		// the module rather than attempting to add a <link> to the document.
+		// Injects window checks into Vite's preload helper & modulepreload polyfill
 		transform(code, id) {
-			// Vite keeps changing up the ID, best we can do for cross-version
-			// compat is an `includes`
 			if (id.includes(preloadHelperId)) {
+				// Injects a window check into Vite's preload helper, instantly resolving
+				// the module rather than attempting to add a <link> to the document.
+				const s = new MagicString(code);
+
 				// Through v5.0.4
 				// https://github.com/vitejs/vite/blob/b93dfe3e08f56cafe2e549efd80285a12a3dc2f0/packages/vite/src/node/plugins/importAnalysisBuild.ts#L95-L98
-				const s = new MagicString(code);
 				s.replace(
 					`if (!__VITE_IS_MODERN__ || !deps || deps.length === 0) {`,
 					`if (!__VITE_IS_MODERN__ || !deps || deps.length === 0 || typeof window === 'undefined') {`,
@@ -200,6 +200,7 @@ export function PrerenderPlugin({
 				const s = new MagicString(code);
 				// Replacement for `'link'` && `"link"` as the output from their tooling has
 				// differed over the years. Should be better than switching to regex.
+				// https://github.com/vitejs/vite/blob/20fdf210ee0ac0824b2db74876527cb7f378a9e8/packages/vite/src/node/plugins/modulePreloadPolyfill.ts#L62
 				s.replace(
 					`const relList = document.createElement('link').relList;`,
 					`if (typeof window === "undefined") return;\n  const relList = document.createElement('link').relList;`,
