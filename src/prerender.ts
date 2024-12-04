@@ -140,11 +140,11 @@ export function PrerenderPlugin({
 			// We're only going to alter the chunking behavior in the default cases, where the user and/or
 			// other plugins haven't already configured this. It'd be impossible to avoid breakages otherwise.
 			if (
-				(Array.isArray(config.build.rollupOptions.output) &&
-					(config.build.rollupOptions as OutputOptions[])?.length > 1) ||
+				Array.isArray(config.build.rollupOptions.output) ||
 				(config.build.rollupOptions.output as OutputOptions)?.manualChunks
-			)
+			) {
 				return;
+			}
 
 			config.build.rollupOptions.output ??= {};
 			(config.build.rollupOptions.output as OutputOptions).manualChunks = (
