@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { promises as fs } from "node:fs";
+import path from "node:path";
 import assert from "node:assert";
 import { dir } from "./util.mjs";
 
@@ -34,4 +35,8 @@ test("builds demo successfully", async () => {
 
 	// `additionalPrerenderRoutes` config option
 	assert.doesNotThrow(async () => await fs.access(dir("demo/dist/404/index.html")));
+
+	const outputFiles = await fs.readdir(path.join(dir("demo/dist"), 'assets'));
+	const outputIndexJS = outputFiles.filter(f => /^index\..+\.js$/.test(f));
+	assert.strictEqual(outputIndexJS.length, 1);
 });
