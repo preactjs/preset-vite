@@ -78,13 +78,17 @@ export function PrerenderPlugin({
 	renderTarget,
 	additionalPrerenderRoutes,
 }: PrerenderPluginOptions = {}): Plugin {
-	const preloadHelperId = "vite/preload-helper";
-	const preloadPolyfillId = "vite/modulepreload-polyfill";
 	let viteConfig = {} as ResolvedConfig;
 	let userEnabledSourceMaps: boolean | undefined;
 
 	renderTarget ||= "body";
 	additionalPrerenderRoutes ||= [];
+
+	const preloadHelperId = "vite/preload-helper";
+	const preloadPolyfillId = "vite/modulepreload-polyfill";
+	// PNPM, Yalc, and anything else utilizing symlinks mangle the file
+	// path a bit so we need a minimal, fairly unique ID to check against
+	const tmpDirId = "headless-prerender";
 
 	/**
 	 * From the non-external scripts in entry HTML document, find the one (if any)
@@ -123,13 +127,16 @@ export function PrerenderPlugin({
 		name: "preact:prerender",
 		apply: "build",
 		enforce: "post",
-		configResolved(config) {
-			userEnabledSourceMaps = !!config.build.sourcemap;
+		// As of Vite 6, `sourcemap` can *only* be set in `config` and
+		// `manualChunks` can *only* be set in `configResolved`.
+		config(config) {
+			userEnabledSourceMaps = !!config.build?.sourcemap;
+
 			// Enable sourcemaps for generating more actionable error messages
+			config.build ??= {};
 			config.build.sourcemap = true;
-
-			viteConfig = config;
-
+		},
+		configResolved(config) {
 			// With this plugin adding an additional input, Rollup/Vite tries to be smart
 			// and extract our prerender script (which is often their main bundle) to a separate
 			// chunk that the entry & prerender chunks can depend on. Unfortunately, this means the
@@ -157,6 +164,8 @@ export function PrerenderPlugin({
 					return "index";
 				}
 			};
+
+			viteConfig = config;
 		},
 		async options(opts) {
 			if (!opts.input) return;
@@ -263,7 +272,7 @@ export function PrerenderPlugin({
 				viteConfig.root,
 				"node_modules",
 				"@preact/preset-vite",
-				"headless-prerender",
+				tmpDirId,
 			);
 			try {
 				await fs.rm(tmpDir, { recursive: true });
@@ -279,18 +288,6 @@ export function PrerenderPlugin({
 
 			let prerenderEntry: OutputChunk | undefined;
 			for (const output of Object.keys(bundle)) {
-				// Clean up source maps if the user didn't enable them themselves
-				if (!userEnabledSourceMaps) {
-					if (output.endsWith(".map")) {
-						delete bundle[output];
-						continue;
-					}
-					if (output.endsWith(".js") && bundle[output].type == "chunk") {
-						(bundle[output] as OutputChunk).code = (bundle[
-							output
-						] as OutputChunk).code.replace(/\n\/\/#\ssourceMappingURL=.*/, "");
-					}
-				}
 				if (!output.endsWith(".js") || bundle[output].type !== "chunk")
 					continue;
 
@@ -316,10 +313,6 @@ export function PrerenderPlugin({
 				);
 				prerender = m.prerender;
 			} catch (e) {
-				const stack = await import("stack-trace").then(({ parse }) =>
-					parse(e as Error).find(s => s.getFileName().includes(tmpDir)),
-				);
-
 				const isReferenceError = e instanceof ReferenceError;
 				let message = `\n
 					${e}
@@ -334,6 +327,10 @@ export function PrerenderPlugin({
 						// do something in browsers only
 					}
 				`.replace(/^\t{5}/gm, "");
+
+				const stack = await import("stack-trace").then(({ parse }) =>
+					parse(e as Error).find(s => s.getFileName().includes(tmpDirId)),
+				);
 
 				const sourceMapContent = prerenderEntry.map;
 				if (stack && sourceMapContent) {
@@ -407,7 +404,10 @@ export function PrerenderPlugin({
 				}
 
 				const result = await prerender({ ssr: true, url: route.url, route });
-				if (result == null) continue;
+				if (result == null) {
+					this.warn(`No result returned for route "${route.url}"`);
+					continue;
+				}
 
 				// Reset HTML doc & head data
 				htmlDoc = htmlParse(tpl);
@@ -485,6 +485,24 @@ export function PrerenderPlugin({
 						fileName: assetName,
 						source: htmlDoc.toString(),
 					});
+
+				// Clean up source maps if the user didn't enable them themselves
+				if (!userEnabledSourceMaps) {
+					for (const output of Object.keys(bundle)) {
+						if (output.endsWith(".map")) {
+							delete bundle[output];
+							continue;
+						}
+						if (output.endsWith(".js")) {
+							const codeOrSource =
+								bundle[output].type == "chunk" ? "code" : "source";
+							// @ts-ignore
+							bundle[output][codeOrSource] = bundle[output][
+								codeOrSource
+							].replace(/\n\/\/#\ssourceMappingURL=.*/, "");
+						}
+					}
+				}
 			}
 		},
 	};
