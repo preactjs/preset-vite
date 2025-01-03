@@ -1,6 +1,6 @@
 {
 	"name": "@preact/preset-vite",
-	"version": "2.9.3",
+	"version": "2.9.4",
 	"description": "Preact preset for the vite bundler",
 	"main": "./dist/cjs/index.js",
 	"module": "./dist/esm/index.mjs",
