@@ -65,6 +65,10 @@ export interface PreactPluginOptions {
 		 */
 		additionalPrerenderRoutes?: string[];
 		/**
+		 * Vite's preview server won't use our prerendered HTML by default, this middleware correct this
+		 */
+		previewMiddlewareEnabled?: boolean;
+		/**
 		 * Path to use as a fallback/404 route, i.e., `/404` or `/not-found`
 		 */
 		previewMiddlewareFallback?: string;
@@ -140,6 +144,16 @@ function preactPlugin({
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
+
+	const prerenderPlugin = vitePrerenderPlugin(prerender);
+	if (!prerender.previewMiddlewareEnabled) {
+		const idx = prerenderPlugin.findIndex(
+			p => p.name == "serve-prerendered-html",
+		);
+		if (idx > -1) {
+			prerenderPlugin.splice(idx, 1);
+		}
+	}
 
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
@@ -271,7 +285,7 @@ function preactPlugin({
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
-		...(prerender.enabled ? [vitePrerenderPlugin(prerender)] : []),
+		...(prerender.enabled ? prerenderPlugin : []),
 	];
 }
 
