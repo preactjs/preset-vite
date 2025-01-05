@@ -17,7 +17,7 @@
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
 		"build": "rimraf dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
-		"test": "node --test test",
+		"test": "rimraf demo/node_modules && node --test",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
@@ -36,7 +36,6 @@
 		"dist/"
 	],
 	"dependencies": {
-		"@babel/code-frame": "^7.22.13",
 		"@babel/plugin-transform-react-jsx": "^7.22.15",
 		"@babel/plugin-transform-react-jsx-development": "^7.22.5",
 		"@prefresh/vite": "^2.4.1",
@@ -44,10 +43,7 @@
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.3.4",
 		"kolorist": "^1.8.0",
-		"magic-string": "0.30.5",
-		"node-html-parser": "^6.1.10",
-		"source-map": "^0.7.4",
-		"stack-trace": "^1.0.0-pre2"
+		"vite-prerender-plugin": "^0.5.2"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",

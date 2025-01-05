@@ -78,7 +78,6 @@ preact({
 | `renderTarget` | `string` | `"body"` | Query selector for where to insert prerender result in your HTML template |
 | `prerenderScript` | `string` | `undefined` | Absolute path to script containing exported `prerender()` function. If not provided, will try to find the prerender script in the scripts listed in your HTML entrypoint |
 | `additionalPrerenderRoutes` | `string[]` | `undefined` | Prerendering will crawl your site automatically, but you'd like to prerender some pages that may not be found (such as a `/404` page), use this option to specify them |
-| `previewMiddlewareEnabled` | `boolean` | `false` | Vite's preview server as of v5 will not use our prerendered HTML documents automatically. This option enables a middleware that will correct this, allowing you to test the result of prerendering locally |
 | `previewMiddlewareFallback` | `string` | `/index.html` | Fallback path to be used when an HTML document cannot be found via the preview middleware, e.g., `/404` or `/not-found` will be used when the user requests `/some-path-that-does-not-exist` |
 
 To prerender your app, you'll need to do these things:

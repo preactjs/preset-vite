@@ -2,7 +2,6 @@ import { execFile } from "node:child_process";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { promises as fs } from "node:fs";
-import path from "node:path";
 import assert from "node:assert";
 import { dir } from "./util.mjs";
 
@@ -18,25 +17,4 @@ test("builds demo successfully", async () => {
 
 	const outputHtml = await fs.readFile(dir("demo/dist/index.html"), "utf-8");
 	assert.match(outputHtml, /Get Started building Vite-powered Preact Apps/);
-
-	// Head API
-	assert.match(outputHtml, /<html lang="en">/);
-	assert.match(outputHtml, /<title>Prerendered Preact App<\/title>/);
-	assert.match(outputHtml, /<meta name="description" content="This is a prerendered Preact app">/);
-
-	// Prerender Data
-	assert.match(
-		outputHtml,
-		/<script type="application\/json" id="preact-prerender-data">{"url":"\/"}<\/script>/
-	);
-
-	// Local Fetch
-	assert.match(outputHtml, /Local fetch works/);
-
-	// `additionalPrerenderRoutes` config option
-	assert.doesNotThrow(async () => await fs.access(dir("demo/dist/404/index.html")));
-
-	const outputFiles = await fs.readdir(path.join(dir("demo/dist"), 'assets'));
-	const outputIndexJS = outputFiles.filter(f => /^index\..+\.js$/.test(f));
-	assert.strictEqual(outputIndexJS.length, 1);
 });
