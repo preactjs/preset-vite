@@ -17,7 +17,7 @@
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
 		"build": "rimraf dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
-		"test": "rimraf demo/node_modules && node --test",
+		"test": "rimraf demo/node_modules && node --test test",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
