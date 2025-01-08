@@ -43,7 +43,7 @@
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.3.4",
 		"kolorist": "^1.8.0",
-		"vite-prerender-plugin": "^0.5.2"
+		"vite-prerender-plugin": "^0.5.3"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
