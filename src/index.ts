@@ -6,7 +6,7 @@ import type { TransformOptions } from "@babel/core";
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
 import { createFilter, parseId } from "./utils.js";
-import { PrerenderPlugin, HTMLRoutingMiddlewarePlugin } from "./prerender.js";
+import { vitePrerenderPlugin } from "vite-prerender-plugin";
 import { transformAsync } from "@babel/core";
 
 export type BabelOptions = Omit<
@@ -145,6 +145,16 @@ function preactPlugin({
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
 
+	const prerenderPlugin = vitePrerenderPlugin(prerender);
+	if (!prerender.previewMiddlewareEnabled) {
+		const idx = prerenderPlugin.findIndex(
+			p => p.name == "serve-prerendered-html",
+		);
+		if (idx > -1) {
+			prerenderPlugin.splice(idx, 1);
+		}
+	}
+
 	const jsxPlugin: Plugin = {
 		name: "vite:preact-jsx",
 		enforce: "pre",
@@ -275,14 +285,7 @@ function preactPlugin({
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
-		...(prerender.enabled ? [PrerenderPlugin(prerender)] : []),
-		...(prerender.previewMiddlewareEnabled
-			? [
-					HTMLRoutingMiddlewarePlugin({
-						fallback: prerender.previewMiddlewareFallback,
-					}),
-			  ]
-			: []),
+		...(prerender.enabled ? prerenderPlugin : []),
 	];
 }
 
