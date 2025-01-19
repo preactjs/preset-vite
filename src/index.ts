@@ -8,6 +8,12 @@ import { preactDevtoolsPlugin } from "./devtools.js";
 import { createFilter, parseId } from "./utils.js";
 import { vitePrerenderPlugin } from "vite-prerender-plugin";
 import { transformAsync } from "@babel/core";
+// @ts-ignore package doesn't ship with declaration files
+import babelReactJsx from "@babel/plugin-transform-react-jsx";
+// @ts-ignore package doesn't ship with declaration files
+import babelReactJsxDev from "@babel/plugin-transform-react-jsx-development";
+// @ts-ignore package doesn't ship with declaration files
+import babelHookNames from "babel-plugin-transform-hook-names";
 
 export type BabelOptions = Omit<
 	TransformOptions,
@@ -234,15 +240,13 @@ function preactPlugin({
 				plugins: [
 					...babelOptions.plugins,
 					[
-						config.isProduction
-							? "@babel/plugin-transform-react-jsx"
-							: "@babel/plugin-transform-react-jsx-development",
+						config.isProduction ? babelReactJsx : babelReactJsxDev,
 						{
 							runtime: "automatic",
 							importSource: jsxImportSource ?? "preact",
 						},
 					],
-					...(devToolsEnabled ? ["babel-plugin-transform-hook-names"] : []),
+					...(devToolsEnabled ? [babelHookNames] : []),
 				],
 				sourceMaps: true,
 				inputSourceMap: false as any,
