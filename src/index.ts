@@ -190,7 +190,6 @@ function preactPlugin({
 						},
 					},
 				},
-				// While this config is unconditional, it'll only be used if Babel is not
 				esbuild: useBabel
 					? undefined
 					: {
@@ -206,7 +205,7 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
-			useBabel ||= !config.isProduction || !!devToolsEnabled;
+			useBabel ||= !config.isProduction || devToolsEnabled;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
