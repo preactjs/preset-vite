@@ -140,7 +140,7 @@ function preactPlugin({
 	babelOptions.parserOpts ||= {} as any;
 	babelOptions.parserOpts.plugins ||= [];
 
-	let useBabel: boolean;
+	let useBabel = typeof babel !== "undefined";
 	const shouldTransform = createFilter(
 		include || [/\.[cm]?[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -190,11 +190,12 @@ function preactPlugin({
 						},
 					},
 				},
-				// While this config is unconditional, it'll only be used if Babel is not
-				esbuild: {
-					jsx: "automatic",
-					jsxImportSource: jsxImportSource ?? "preact",
-				},
+				esbuild: useBabel
+					? undefined
+					: {
+							jsx: "automatic",
+							jsxImportSource: jsxImportSource ?? "preact",
+					  },
 				optimizeDeps: {
 					include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
@@ -204,8 +205,7 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
-			useBabel =
-				!config.isProduction || devToolsEnabled || typeof babel !== "undefined";
+			useBabel ||= !config.isProduction || !!devToolsEnabled;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
