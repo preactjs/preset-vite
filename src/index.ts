@@ -205,7 +205,7 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
-			useBabel ||= !config.isProduction || devToolsEnabled;
+			useBabel ||= !config.isProduction || !!devToolsEnabled;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
