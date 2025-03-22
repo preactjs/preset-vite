@@ -1,7 +1,7 @@
 import { Plugin, ResolvedConfig, normalizePath } from "vite";
 import path from "path";
 import debug from "debug";
-import * as kl from "kolorist";
+import pc from "picocolors";
 
 import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
@@ -66,7 +66,7 @@ export function preactDevtoolsPlugin({
 				const source = config.isProduction ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
-				log(`[inject] ${kl.cyan(source)} -> ${kl.dim(id)}`);
+				log(`[inject] ${pc.cyan(source)} -> ${pc.dim(id)}`);
 				return code;
 			}
 		},
