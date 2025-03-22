@@ -17,8 +17,8 @@
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
-		"build": "rimraf dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
-		"test": "rimraf demo/node_modules && node --test test",
+		"build": "premove dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
+		"test": "premove demo/node_modules && node --test test",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
@@ -62,8 +62,8 @@
 		"preact": "^10.19.2",
 		"preact-iso": "^2.3.2",
 		"preact-render-to-string": "^6.3.1",
+		"premove": "^4.0.0",
 		"prettier": "^2.2.1",
-		"rimraf": "^3.0.2",
 		"rollup": "^2.77.3",
 		"simple-git-hooks": "^2.0.2",
 		"ts-node": "^9.1.1",
