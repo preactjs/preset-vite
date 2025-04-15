@@ -235,6 +235,7 @@ function preactPlugin({
 				},
 				generatorOpts: {
 					...babelOptions.generatorOpts,
+					importAttributesKeyword: 'with',
 					decoratorsBeforeExport: true,
 				},
 				plugins: [
