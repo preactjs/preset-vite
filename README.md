@@ -8,6 +8,8 @@ Features:
 - Enables [Preact Devtools](https://preactjs.github.io/preact-devtools/) bridge during development
 - Aliases React to `preact/compat`
 
+> If you want to look into testing Preact with Vitest Browser mode [check out vitest-browser-preact](https://github.com/JoviDeCroock/vitest-browser-preact)
+
 ## Installation
 
 First intall the preset package from npm:
