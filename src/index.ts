@@ -218,8 +218,8 @@ function preactPlugin({
 				"classProperties",
 				"classPrivateProperties",
 				"classPrivateMethods",
-				!id.endsWith(".ts") && "jsx",
-				/\.tsx?$/.test(id) && "typescript",
+				!/\.[cm]?ts$/.test(id) && "jsx",
+				/\.[cm]?tsx?$/.test(id) && "typescript",
 			].filter(Boolean) as ParserPlugin[];
 
 			const result = await transformAsync(code, {
