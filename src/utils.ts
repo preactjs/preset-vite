@@ -1,8 +1,4 @@
-import type { CreateFilter } from "@rollup/pluginutils";
-
-export { createFilter } from "@rollup/pluginutils";
-
-export type RollupFilter = ReturnType<CreateFilter>;
+export { createFilter } from "vite";
 
 // Allows to ignore query parameters, as in Vue SFC virtual modules.
 export function parseId(url: string) {
