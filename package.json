@@ -44,7 +44,7 @@
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.4.3",
 		"picocolors": "^1.1.1",
-		"vite-prerender-plugin": "^0.5.12"
+		"vite-prerender-plugin": "^0.5.8"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
