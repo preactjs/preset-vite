@@ -47,8 +47,7 @@ export default defineConfig({
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `devtoolsInProd` | `boolean` | `false` | Inject devtools bridge in production bundle instead of only in development mode |
-| `devToolsEnabled` | `boolean` | `true` | Inject devtools bridge |
+| `devToolsEnabled` | `boolean` | `!isProduction` | Inject devtools bridge |
 | `prefreshEnabled` | `boolean` | `true` | Inject [Prefresh](https://github.com/preactjs/prefresh) for HMR |
 | `reactAliasesEnabled` | `boolean` | `true` | Aliases `react`, `react-dom` to `preact/compat` |
 | `babel` | `object` | | See [Babel configuration](#babel-configuration) |
