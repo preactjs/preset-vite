@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { promisify } from "node:util";
 import { promises as fs } from "node:fs";
 import assert from "node:assert";
-import { dir } from "./util.mjs";
+import { dir } from "./util.js";
 
 const execFileAsync = promisify(execFile);
 

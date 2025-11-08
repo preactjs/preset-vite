@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { afterEach, beforeEach, describe, it } from "node:test";
-import { devServerURL, launchDemoDevServer } from "./util.mjs";
+import { devServerURL, launchDemoDevServer } from "./util.js";
 
 describe("dev server", async () => {
 	let devServerProc;
