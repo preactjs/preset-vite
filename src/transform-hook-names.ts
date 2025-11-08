@@ -17,21 +17,18 @@ type NodeWithRange<N extends Node = Node> = N & {
 };
 
 export interface TransformHookNamesPluginOptions {
-	devtoolsInProd?: boolean;
 	devToolsEnabled?: boolean;
 	shouldTransform: RollupFilter;
 }
 
 export function transformHookNamesPlugin({
-	devtoolsInProd,
 	devToolsEnabled,
 	shouldTransform,
 }: TransformHookNamesPluginOptions): Plugin {
 	return {
 		name: "preact:transform-hook-names",
 		configResolved(config) {
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 		transform(code, url) {
 			if (!devToolsEnabled) return;

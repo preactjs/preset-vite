@@ -28,14 +28,8 @@ export type BabelOptions = Omit<
 
 export interface PreactPluginOptions {
 	/**
-	 * Inject devtools bridge in production bundle instead of only in development mode.
-	 * @default false
-	 */
-	devtoolsInProd?: boolean;
-
-	/**
 	 * Whether to use Preact devtools
-	 * @default true
+	 * @default !isProduction
 	 */
 	devToolsEnabled?: boolean;
 
@@ -112,7 +106,6 @@ export interface PreactBabelOptions extends BabelOptions {
 
 // Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
 function preactPlugin({
-	devtoolsInProd,
 	devToolsEnabled,
 	prefreshEnabled,
 	reactAliasesEnabled,
@@ -147,7 +140,6 @@ function preactPlugin({
 		exclude || [/node_modules/],
 	);
 
-	devtoolsInProd = devtoolsInProd ?? false;
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
@@ -204,8 +196,7 @@ function preactPlugin({
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
@@ -285,14 +276,12 @@ function preactPlugin({
 		...(!useBabel
 			? [
 					transformHookNamesPlugin({
-						devtoolsInProd,
 						devToolsEnabled,
 						shouldTransform,
 					}),
 			  ]
 			: []),
 		preactDevtoolsPlugin({
-			devtoolsInProd,
 			devToolsEnabled,
 			shouldTransform,
 		}),
