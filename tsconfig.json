@@ -6,7 +6,8 @@
 		"module": "node20",
 		"moduleResolution": "node16",
 		"declaration": true,
-		"outDir": "dist/"
+		"outDir": "dist/",
+		"skipLibCheck": true
 	},
 	"files": ["./src/index.ts"]
 }
