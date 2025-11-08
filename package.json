@@ -84,6 +84,6 @@
 		"trailingComma": "all"
 	},
 	"volta": {
-		"node": "18.12.1"
+		"node": "20.x"
 	}
 }
