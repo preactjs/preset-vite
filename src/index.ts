@@ -210,7 +210,10 @@ function preactPlugin({
 				"classPrivateProperties",
 				"classPrivateMethods",
 				!/\.[cm]?ts$/.test(id) && "jsx",
-				/\.[cm]?tsx?$/.test(id) && "typescript",
+				// Babel doesn't support many transforms without also transforming TS.
+				// Whilst our limited transforms (JSX & hook names) are fine, if users
+				// add their own, they may run into unhelpful errors. See #170
+				/\.[cm]?tsx?$/.test(id) && typeof babel !== "undefined" && "typescript",
 			].filter(Boolean) as ParserPlugin[];
 
 			const result = await transformAsync(code, {
@@ -263,7 +266,7 @@ function preactPlugin({
 									alias: {
 										"react-dom/test-utils": "preact/test-utils",
 										"react-dom": "preact/compat",
-                                        "react/jsx-runtime": "preact/jsx-runtime",
+										"react/jsx-runtime": "preact/jsx-runtime",
 										react: "preact/compat",
 									},
 								},
@@ -275,7 +278,7 @@ function preactPlugin({
 		jsxPlugin,
 		preactDevtoolsPlugin({
 			devToolsEnabled,
-			shouldTransform
+			shouldTransform,
 		}),
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
