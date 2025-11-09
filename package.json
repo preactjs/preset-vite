@@ -10,6 +10,7 @@
 	},
 	"types": "src/index.d.ts",
 	"scripts": {
+		"postinstall": "patch-package",
 		"prepare": "npx simple-git-hooks",
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
@@ -51,6 +52,7 @@
 		"@types/debug": "^4.1.12",
 		"@types/node": "^20.19.24",
 		"nano-staged": "^0.8.0",
+		"patch-package": "^8.0.1",
 		"preact": "^10.27.2",
 		"preact-iso": "^2.11.0",
 		"preact-render-to-string": "^6.6.3",
