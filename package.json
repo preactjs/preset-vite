@@ -2,24 +2,21 @@
 	"name": "@preact/preset-vite",
 	"version": "2.10.2",
 	"description": "Preact preset for the vite bundler",
-	"main": "./dist/cjs/index.js",
-	"module": "./dist/esm/index.mjs",
+	"type": "module",
+	"main": "./src/index.js",
 	"exports": {
-		".": {
-			"import": "./dist/esm/index.mjs",
-			"require": "./dist/cjs/index.js"
-		},
+		".": "./src/index.js",
 		"./package.json": "./package.json"
 	},
-	"types": "dist/cjs/index.d.ts",
+	"types": "src/index.d.ts",
 	"scripts": {
+		"postinstall": "patch-package",
 		"prepare": "npx simple-git-hooks",
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
-		"build": "premove dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
 		"test": "premove demo/node_modules && node --test test",
-		"prepublishOnly": "npm run build"
+		"test:types": "tsc -p jsconfig.json"
 	},
 	"keywords": [
 		"preact",
@@ -34,38 +31,36 @@
 	},
 	"license": "MIT",
 	"files": [
-		"dist/"
+		"src/"
 	],
 	"dependencies": {
 		"@babel/plugin-transform-react-jsx": "^7.27.1",
 		"@babel/plugin-transform-react-jsx-development": "^7.27.1",
 		"@prefresh/vite": "^2.4.11",
-		"@rollup/pluginutils": "^4.1.1",
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.4.3",
 		"picocolors": "^1.1.1",
-		"vite-prerender-plugin": "^0.5.8"
+		"vite-prerender-plugin": "^0.5.12"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
-		"vite": "2.x || 3.x || 4.x || 5.x || 6.x || 7.x"
+		"vite": "7.x"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.28.5",
 		"@types/babel__core": "^7.20.5",
 		"@types/debug": "^4.1.12",
-		"@types/estree": "^0.0.50",
-		"@types/node": "^14.14.33",
+		"@types/node": "^20.19.24",
 		"nano-staged": "^0.8.0",
+		"patch-package": "^8.0.1",
 		"preact": "^10.27.2",
 		"preact-iso": "^2.11.0",
 		"preact-render-to-string": "^6.6.3",
 		"premove": "^4.0.0",
 		"prettier": "^2.2.1",
-		"rollup": "^2.77.3",
 		"simple-git-hooks": "^2.13.1",
-		"typescript": "~5.4.0",
-		"vite": "^2.6.7"
+		"typescript": "^5.9.3",
+		"vite": "^7.2.2"
 	},
 	"nano-staged": {
 		"**/*.{js,jsx,ts,tsx,yml,json}": [

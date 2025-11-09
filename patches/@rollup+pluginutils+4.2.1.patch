@@ -1,0 +1,12 @@
+diff --git a/node_modules/@rollup/pluginutils/package.json b/node_modules/@rollup/pluginutils/package.json
+index 6c9a285..8740afe 100644
+--- a/node_modules/@rollup/pluginutils/package.json
++++ b/node_modules/@rollup/pluginutils/package.json
+@@ -19,6 +19,7 @@
+   "module": "./dist/es/index.js",
+   "type": "commonjs",
+   "exports": {
++    "types": "./types/index.d.ts",
+     "require": "./dist/cjs/index.js",
+     "import": "./dist/es/index.js"
+   },
