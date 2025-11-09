@@ -1,5 +1,5 @@
 import type { Plugin, ResolvedConfig } from "vite";
-import type { FilterPattern } from "@rollup/pluginutils";
+import type { FilterPattern } from "vite";
 import type { ParserPlugin, ParserOptions } from "@babel/parser";
 import type { TransformOptions } from "@babel/core";
 

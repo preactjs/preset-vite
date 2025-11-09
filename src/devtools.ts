@@ -3,12 +3,12 @@ import path from "path";
 import debug from "debug";
 import pc from "picocolors";
 
-import type { RollupFilter } from "./utils.js";
+import type { createFilter } from "./utils.js";
 import { parseId } from "./utils.js";
 
 export interface PreactDevtoolsPluginOptions {
 	devToolsEnabled?: boolean;
-	shouldTransform: RollupFilter;
+	shouldTransform: ReturnType<typeof createFilter>;
 }
 
 export function preactDevtoolsPlugin({
