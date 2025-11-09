@@ -3,20 +3,19 @@
 	"version": "2.10.3",
 	"description": "Preact preset for the vite bundler",
 	"type": "module",
-	"main": "./dist/index.js",
+	"main": "./src/index.js",
 	"exports": {
-		".": "./dist/index.js",
+		".": "./src/index.js",
 		"./package.json": "./package.json"
 	},
-	"types": "dist/index.d.ts",
+	"types": "src/index.d.ts",
 	"scripts": {
 		"prepare": "npx simple-git-hooks",
 		"dev": "vite demo",
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
-		"build": "premove dist && tsc",
 		"test": "premove demo/node_modules && node --test test",
-		"prepublishOnly": "npm run build"
+		"test:types": "tsc -p jsconfig.json"
 	},
 	"keywords": [
 		"preact",
@@ -31,7 +30,7 @@
 	},
 	"license": "MIT",
 	"files": [
-		"dist/"
+		"src/"
 	],
 	"dependencies": {
 		"@babel/plugin-transform-react-jsx": "^7.27.1",
@@ -53,7 +52,7 @@
 		"@babel/core": "^7.28.5",
 		"@types/babel__core": "^7.20.5",
 		"@types/debug": "^4.1.12",
-		"@types/node": "^20.19.24",
+		"@types/node": "^20.19.37",
 		"nano-staged": "^0.8.0",
 		"preact": "^10.27.2",
 		"preact-iso": "^2.11.0",
