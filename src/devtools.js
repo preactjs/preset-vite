@@ -1,27 +1,31 @@
-import { Plugin, ResolvedConfig, normalizePath } from "vite";
+import { normalizePath } from "vite";
 import path from "path";
 import debug from "debug";
 import pc from "picocolors";
 
-import type { createFilter } from "./utils.js";
 import { parseId } from "./utils.js";
 
-export interface PreactDevtoolsPluginOptions {
-	devToolsEnabled?: boolean;
-	shouldTransform: ReturnType<typeof createFilter>;
-}
+/**
+ * @typedef {import('vite').Plugin} Plugin
+ * @typedef {import('vite').ResolvedConfig} ResolvedConfig
+ *
+ * @typedef {import('./index.d.ts').PreactDevtoolsPluginOptions} PreactDevtoolsPluginOptions
+ */
 
-export function preactDevtoolsPlugin({
-	devToolsEnabled,
-	shouldTransform,
-}: PreactDevtoolsPluginOptions): Plugin {
+/**
+ * @param {PreactDevtoolsPluginOptions} options
+ * @returns {Plugin}
+ */
+export function preactDevtoolsPlugin({ devToolsEnabled, shouldTransform }) {
 	const log = debug("vite:preact-devtools");
 
 	let entry = "";
-	let config: ResolvedConfig;
+	/** @type {ResolvedConfig} */
+	let config;
 	let found = false;
 
-	const plugin: Plugin = {
+	/** @type {Plugin} */
+	const plugin = {
 		name: "preact:devtools",
 
 		// Ensure that we resolve before everything else
