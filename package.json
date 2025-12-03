@@ -40,7 +40,7 @@
 		"@babel/plugin-transform-react-jsx": "^7.27.1",
 		"@babel/plugin-transform-react-jsx-development": "^7.27.1",
 		"@prefresh/vite": "^2.4.11",
-		"@rollup/pluginutils": "^4.1.1",
+		"@rollup/pluginutils": "^5.0.0",
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.4.3",
 		"picocolors": "^1.1.1",
@@ -81,6 +81,6 @@
 		"trailingComma": "all"
 	},
 	"volta": {
-		"node": "20.x"
+		"node": "20.19.6"
 	}
 }
