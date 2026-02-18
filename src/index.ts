@@ -5,6 +5,7 @@ import type { TransformOptions } from "@babel/core";
 
 import prefresh from "@prefresh/vite";
 import { preactDevtoolsPlugin } from "./devtools.js";
+import { transformHookNamesPlugin } from "./transform-hook-names.js";
 import { createFilter, parseId } from "./utils.js";
 import { vitePrerenderPlugin } from "vite-prerender-plugin";
 import { transformAsync } from "@babel/core";
@@ -140,7 +141,7 @@ function preactPlugin({
 	babelOptions.parserOpts ||= {} as any;
 	babelOptions.parserOpts.plugins ||= [];
 
-	let useBabel = typeof babel !== "undefined";
+	const useBabel = typeof babel !== "undefined";
 	const shouldTransform = createFilter(
 		include || [/\.[cm]?[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -205,7 +206,6 @@ function preactPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
-			useBabel ||= !config.isProduction || !!devToolsEnabled;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
@@ -272,7 +272,7 @@ function preactPlugin({
 									alias: {
 										"react-dom/test-utils": "preact/test-utils",
 										"react-dom": "preact/compat",
-                                        "react/jsx-runtime": "preact/jsx-runtime",
+										"react/jsx-runtime": "preact/jsx-runtime",
 										react: "preact/compat",
 									},
 								},
@@ -282,6 +282,15 @@ function preactPlugin({
 			  ]
 			: []),
 		jsxPlugin,
+		...(!useBabel
+			? [
+					transformHookNamesPlugin({
+						devtoolsInProd,
+						devToolsEnabled,
+						shouldTransform,
+					}),
+			  ]
+			: []),
 		preactDevtoolsPlugin({
 			devtoolsInProd,
 			devToolsEnabled,

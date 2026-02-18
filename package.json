@@ -43,8 +43,10 @@
 		"@rollup/pluginutils": "^5.0.0",
 		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.4.3",
+		"magic-string": "^0.30.21",
 		"picocolors": "^1.1.1",
-		"vite-prerender-plugin": "^0.5.8"
+		"vite-prerender-plugin": "^0.5.8",
+		"zimmerframe": "^1.1.4"
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
