@@ -1,6 +1,5 @@
 import prefresh from "@prefresh/vite";
 import { createFilter } from "@rollup/pluginutils";
-import { vitePrerenderPlugin } from "vite-prerender-plugin";
 import { transformAsync } from "@babel/core";
 // @ts-ignore package doesn't ship with declaration files
 import babelReactJsx from "@babel/plugin-transform-react-jsx";
@@ -14,8 +13,15 @@ import { parseId } from "./utils.js";
 
 /** @import { Plugin, ResolvedConfig } from "vite"; */
 /** @import { ParserPlugin } from "@babel/parser"; */
+/** @import { Options as PrerenderPluginOptions } from "vite-prerender-plugin" */
 
 /** @import { preact as PreactPlugin, PreactBabelOptions } from "./index.d.ts" */
+
+/** @type {(options?: PrerenderPluginOptions) => Plugin[]} */
+let vitePrerenderPlugin;
+try {
+	({ vitePrerenderPlugin } = await import("vite-prerender-plugin"));
+} catch {}
 
 /**
  * Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
@@ -61,16 +67,6 @@ function preactPlugin({
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
-
-	const prerenderPlugin = vitePrerenderPlugin(prerender);
-	if (!prerender.previewMiddlewareEnabled) {
-		const idx = prerenderPlugin.findIndex(
-			p => p.name == "serve-prerendered-html",
-		);
-		if (idx > -1) {
-			prerenderPlugin.splice(idx, 1);
-		}
-	}
 
 	/** @type {Plugin} */
 	const jsxPlugin = {
@@ -210,7 +206,7 @@ function preactPlugin({
 		...(prefreshEnabled
 			? [prefresh({ include, exclude, parserPlugins: baseParserOptions })]
 			: []),
-		...(prerender.enabled ? prerenderPlugin : []),
+		...(prerender.enabled ? vitePrerenderPlugin(prerender) : []),
 	];
 }
 
