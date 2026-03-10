@@ -63,15 +63,6 @@ function preactPlugin({
 	prerender = prerender ?? { enabled: false };
 
 	const prerenderPlugin = vitePrerenderPlugin(prerender);
-	if (!prerender.previewMiddlewareEnabled) {
-		const idx = prerenderPlugin.findIndex(
-			p => p.name == "serve-prerendered-html",
-		);
-		if (idx > -1) {
-			prerenderPlugin.splice(idx, 1);
-		}
-	}
-
 	/** @type {Plugin} */
 	const jsxPlugin = {
 		name: "vite:preact-jsx",
