@@ -1,29 +1,28 @@
-import { Plugin, ResolvedConfig, normalizePath } from "vite";
+import { normalizePath } from "vite";
 import path from "path";
 import debug from "debug";
 import pc from "picocolors";
 
-import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
 
-export interface PreactDevtoolsPluginOptions {
-	devtoolsInProd?: boolean;
-	devToolsEnabled?: boolean;
-	shouldTransform: RollupFilter;
-}
+/** @import { Plugin, ResolvedConfig } from "vite"; */
 
-export function preactDevtoolsPlugin({
-	devtoolsInProd,
-	devToolsEnabled,
-	shouldTransform,
-}: PreactDevtoolsPluginOptions): Plugin {
+/** @import { PreactDevtoolsPluginOptions } from "./index.d.ts" */
+
+/**
+ * @param {PreactDevtoolsPluginOptions} options
+ * @returns {Plugin}
+ */
+export function preactDevtoolsPlugin({ devToolsEnabled, shouldTransform }) {
 	const log = debug("vite:preact-devtools");
 
 	let entry = "";
-	let config: ResolvedConfig;
+	/** @type {ResolvedConfig} */
+	let config;
 	let found = false;
 
-	const plugin: Plugin = {
+	/** @type {Plugin} */
+	const plugin = {
 		name: "preact:devtools",
 
 		// Ensure that we resolve before everything else
@@ -39,8 +38,7 @@ export function preactDevtoolsPlugin({
 
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 
 		resolveId(url, importer = "") {

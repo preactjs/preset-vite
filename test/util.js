@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const dir = (...args) => path.join(__dirname, "..", ...args);
 
-export const devServerURL = new URL("http://127.0.0.1:3000/");
+export const devServerURL = new URL("http://localhost:5173/");
 
 /**
  * Wait for vite dev server to start
@@ -33,10 +33,9 @@ function waitForServerStart(devServerProc) {
 				const data = Buffer.isBuffer(chunk)
 					? chunk.toString("utf-8")
 					: chunk.toString();
-
 				stdout += data;
 
-				if (stdout.match(/ready in [0-9]+ms/g) != null) {
+				if (/ready in/.test(stdout)) {
 					cleanup();
 					resolve();
 				}

@@ -1,12 +1,5 @@
-import type { Plugin, ResolvedConfig } from "vite";
-import type { FilterPattern } from "@rollup/pluginutils";
-import type { ParserPlugin, ParserOptions } from "@babel/parser";
-import type { TransformOptions } from "@babel/core";
-
 import prefresh from "@prefresh/vite";
-import { preactDevtoolsPlugin } from "./devtools.js";
-import { transformHookNamesPlugin } from "./transform-hook-names.js";
-import { createFilter, parseId } from "./utils.js";
+import { createFilter } from "@rollup/pluginutils";
 import { vitePrerenderPlugin } from "vite-prerender-plugin";
 import { transformAsync } from "@babel/core";
 // @ts-ignore package doesn't ship with declaration files
@@ -15,104 +8,21 @@ import babelReactJsx from "@babel/plugin-transform-react-jsx";
 import babelReactJsxDev from "@babel/plugin-transform-react-jsx-development";
 // @ts-ignore package doesn't ship with declaration files
 import babelHookNames from "babel-plugin-transform-hook-names";
+import { preactDevtoolsPlugin } from "./devtools.js";
+import { transformHookNamesPlugin } from "./transform-hook-names.js";
+import { parseId } from "./utils.js";
 
-export type BabelOptions = Omit<
-	TransformOptions,
-	| "ast"
-	| "filename"
-	| "root"
-	| "sourceFileName"
-	| "sourceMaps"
-	| "inputSourceMap"
->;
+/** @import { Plugin, ResolvedConfig } from "vite"; */
+/** @import { ParserPlugin } from "@babel/parser"; */
 
-export interface PreactPluginOptions {
-	/**
-	 * Inject devtools bridge in production bundle instead of only in development mode.
-	 * @default false
-	 */
-	devtoolsInProd?: boolean;
+/** @import { preact as PreactPlugin, PreactBabelOptions } from "./index.d.ts" */
 
-	/**
-	 * Whether to use Preact devtools
-	 * @default true
-	 */
-	devToolsEnabled?: boolean;
-
-	/**
-	 * Whether to use prefresh HMR
-	 * @default true
-	 */
-	prefreshEnabled?: boolean;
-
-	/**
-	 * Whether to alias react, react-dom to preact/compat
-	 * @default true
-	 */
-	reactAliasesEnabled?: boolean;
-
-	/**
-	 * Prerender plugin options
-	 */
-	prerender?: {
-		/**
-		 * Whether to prerender your app on build
-		 */
-		enabled: boolean;
-		/**
-		 * Absolute path to script containing an exported `prerender()` function
-		 */
-		prerenderScript?: string;
-		/**
-		 * Query selector for specifying where to insert prerender result in your HTML template
-		 */
-		renderTarget?: string;
-		/**
-		 * Additional routes that should be prerendered
-		 */
-		additionalPrerenderRoutes?: string[];
-		/**
-		 * Vite's preview server won't use our prerendered HTML by default, this middleware correct this
-		 */
-		previewMiddlewareEnabled?: boolean;
-		/**
-		 * Path to use as a fallback/404 route, i.e., `/404` or `/not-found`
-		 */
-		previewMiddlewareFallback?: string;
-	};
-
-	/**
-	 * RegExp or glob to match files to be transformed
-	 */
-	include?: FilterPattern;
-
-	/**
-	 * RegExp or glob to match files to NOT be transformed
-	 */
-	exclude?: FilterPattern;
-
-	/**
-	 * Babel configuration applied in both dev and prod.
-	 */
-	babel?: BabelOptions;
-	/**
-	 * Import Source for jsx. Defaults to "preact".
-	 */
-	jsxImportSource?: string;
-}
-
-export interface PreactBabelOptions extends BabelOptions {
-	plugins: Extract<BabelOptions["plugins"], any[]>;
-	presets: Extract<BabelOptions["presets"], any[]>;
-	overrides: Extract<BabelOptions["overrides"], any[]>;
-	parserOpts: ParserOptions & {
-		plugins: Extract<ParserOptions["plugins"], any[]>;
-	};
-}
-
-// Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
+/**
+ * Taken from https://github.com/vitejs/vite/blob/main/packages/plugin-react/src/index.ts
+ *
+ * @type {PreactPlugin}
+ */
 function preactPlugin({
-	devtoolsInProd,
 	devToolsEnabled,
 	prefreshEnabled,
 	reactAliasesEnabled,
@@ -121,24 +31,25 @@ function preactPlugin({
 	exclude,
 	babel,
 	jsxImportSource,
-}: PreactPluginOptions = {}): Plugin[] {
+} = {}) {
 	const baseParserOptions = [
 		"importMeta",
 		"explicitResourceManagement",
 		"topLevelAwait",
 	];
-	let config: ResolvedConfig;
+	/** @type {ResolvedConfig} */
+	let config;
 
-	let babelOptions = {
+	let babelOptions = /** @type {PreactBabelOptions} */ ({
 		babelrc: false,
 		configFile: false,
 		...babel,
-	} as PreactBabelOptions;
+	});
 
 	babelOptions.plugins ||= [];
 	babelOptions.presets ||= [];
 	babelOptions.overrides ||= [];
-	babelOptions.parserOpts ||= {} as any;
+	babelOptions.parserOpts ||= /** @type {any} */ ({});
 	babelOptions.parserOpts.plugins ||= [];
 
 	const useBabel = typeof babel !== "undefined";
@@ -147,7 +58,6 @@ function preactPlugin({
 		exclude || [/node_modules/],
 	);
 
-	devtoolsInProd = devtoolsInProd ?? false;
 	prefreshEnabled = prefreshEnabled ?? true;
 	reactAliasesEnabled = reactAliasesEnabled ?? true;
 	prerender = prerender ?? { enabled: false };
@@ -162,7 +72,8 @@ function preactPlugin({
 		}
 	}
 
-	const jsxPlugin: Plugin = {
+	/** @type {Plugin} */
+	const jsxPlugin = {
 		name: "vite:preact-jsx",
 		enforce: "pre",
 		config() {
@@ -204,8 +115,7 @@ function preactPlugin({
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 		async transform(code, url) {
 			// Ignore query parameters, as in Vue SFC virtual modules.
@@ -213,14 +123,17 @@ function preactPlugin({
 
 			if (!useBabel || !shouldTransform(id)) return;
 
-			const parserPlugins = [
+			const parserPlugins = /** @type {ParserPlugin[]} */ ([
 				...baseParserOptions,
 				"classProperties",
 				"classPrivateProperties",
 				"classPrivateMethods",
 				!/\.[cm]?ts$/.test(id) && "jsx",
-				/\.[cm]?tsx?$/.test(id) && "typescript",
-			].filter(Boolean) as ParserPlugin[];
+				// Babel doesn't support many transforms without also transforming TS.
+				// Whilst our limited transforms (JSX & hook names) are fine, if users
+				// add their own, they may run into unhelpful errors. See #170
+				/\.[cm]?tsx?$/.test(id) && typeof babel === "undefined" && "typescript",
+			].filter(Boolean));
 
 			const result = await transformAsync(code, {
 				...babelOptions,
@@ -249,7 +162,7 @@ function preactPlugin({
 					...(devToolsEnabled ? [babelHookNames] : []),
 				],
 				sourceMaps: true,
-				inputSourceMap: false as any,
+				inputSourceMap: undefined,
 			});
 
 			// NOTE: Since no config file is being loaded, this path wouldn't occur.
@@ -285,14 +198,12 @@ function preactPlugin({
 		...(!useBabel
 			? [
 					transformHookNamesPlugin({
-						devtoolsInProd,
 						devToolsEnabled,
 						shouldTransform,
 					}),
 			  ]
 			: []),
 		preactDevtoolsPlugin({
-			devtoolsInProd,
 			devToolsEnabled,
 			shouldTransform,
 		}),

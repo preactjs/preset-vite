@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "ES2024",
+		"strict": true,
+		"strictNullChecks": true,
+		"noImplicitAny": true,
+		"esModuleInterop": true,
+		"module": "preserve",
+		"noEmit": true,
+		"allowJs": true,
+		"checkJs": true,
+		"skipLibCheck": false,
+		"maxNodeModuleJsDepth": 0
+	},
+	"include": ["src/**/*"],
+}

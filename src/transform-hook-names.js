@@ -1,37 +1,27 @@
 import { extractAssignedNames } from "@rollup/pluginutils";
-import type { Node, Program } from "estree";
 import MagicString from "magic-string";
-import type { Plugin } from "vite";
 import { walk } from "zimmerframe";
 
-import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
+
+/** @import { Plugin } from "vite" */
+/** @import { Node, Program } from "estree" */
+
+/** @import { TransformHookNamesPluginOptions, NodeWithRange } from "./index.d.ts"; */
 
 const HOOK_IMPORTS = new Set(["preact/hooks", "preact/compat", "react"]);
 const HOOK_NAME_RE = /^(useState|useReducer|useRef|useMemo)$/;
 const FILTER_CODE_RE = /\buse(?:State|Reducer|Ref|Memo)\b/;
 
-type NodeWithRange<N extends Node = Node> = N & {
-	start: number;
-	end: number;
-};
-
-export interface TransformHookNamesPluginOptions {
-	devtoolsInProd?: boolean;
-	devToolsEnabled?: boolean;
-	shouldTransform: RollupFilter;
-}
-
-export function transformHookNamesPlugin({
-	devtoolsInProd,
-	devToolsEnabled,
-	shouldTransform,
-}: TransformHookNamesPluginOptions): Plugin {
+/**
+ * @param {TransformHookNamesPluginOptions} options
+ * @returns {Plugin}
+ */
+export function transformHookNamesPlugin({ devToolsEnabled, shouldTransform }) {
 	return {
 		name: "preact:transform-hook-names",
 		configResolved(config) {
-			devToolsEnabled =
-				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+			devToolsEnabled = devToolsEnabled ?? !config.isProduction;
 		},
 		transform(code, url) {
 			if (!devToolsEnabled) return;
@@ -40,9 +30,10 @@ export function transformHookNamesPlugin({
 			if (!shouldTransform(id)) return;
 			if (!FILTER_CODE_RE.test(code)) return;
 
-			let ast: NodeWithRange<Program>;
+			/** @type {NodeWithRange<Program>} */
+			let ast;
 			try {
-				ast = this.parse(code) as NodeWithRange<Program>;
+				ast = /** @type {NodeWithRange<Program>} */ (this.parse(code));
 			} catch {
 				return;
 			}
@@ -52,7 +43,9 @@ export function transformHookNamesPlugin({
 
 			const s = new MagicString(code);
 			let hasHelper = false;
-			walk<NodeWithRange, null>(ast, null, {
+
+			const typedWalk = /** @type {typeof walk<NodeWithRange, null>} */ (walk);
+			typedWalk(ast, null, {
 				CallExpression(node, { path, next }) {
 					const callee = node.callee;
 					if (callee.type !== "Identifier") {
@@ -85,9 +78,9 @@ export function transformHookNamesPlugin({
 			});
 			if (!hasHelper) return;
 
-			const firstNode = ast.body[0] as NodeWithRange;
+			const firstNode = /** @type {unknown} */ (ast.body[0]);
 			s.prependLeft(
-				firstNode.start,
+				/** @type {NodeWithRange<Program>} */ (firstNode).start,
 				'import { addHookName } from "preact/devtools";\n',
 			);
 
@@ -99,8 +92,12 @@ export function transformHookNamesPlugin({
 	};
 }
 
-function getImportedHooks(ast: NodeWithRange<Program>): Set<string> {
-	const hooks = new Set<string>();
+/**
+ * @param {NodeWithRange<Program>} ast
+ * @returns {Set<string>}
+ */
+function getImportedHooks(ast) {
+	const hooks = new Set();
 	for (const node of ast.body) {
 		if (node.type !== "ImportDeclaration") continue;
 
@@ -109,7 +106,11 @@ function getImportedHooks(ast: NodeWithRange<Program>): Set<string> {
 		if (!source || !HOOK_IMPORTS.has(source)) continue;
 
 		for (const specifier of node.specifiers) {
-			if (specifier.type !== "ImportSpecifier") continue;
+			if (
+				specifier.type !== "ImportSpecifier" ||
+				specifier.imported.type !== "Identifier"
+			)
+				continue;
 
 			const importedName = specifier.imported.name;
 			if (
@@ -124,7 +125,11 @@ function getImportedHooks(ast: NodeWithRange<Program>): Set<string> {
 	return hooks;
 }
 
-function getOuterBindingNames(node: Node | undefined): string[] {
+/**
+ * @param {Node | undefined} node
+ * @returns {string[]}
+ */
+function getOuterBindingNames(node) {
 	if (!node) return [];
 
 	switch (node.type) {
