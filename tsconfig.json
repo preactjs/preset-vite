@@ -1,12 +1,17 @@
 {
 	"compilerOptions": {
-		"target": "ES2019",
+		"target": "ES2022",
 		"strict": true,
 		"esModuleInterop": true,
 		"module": "ESNext",
 		"moduleResolution": "Node",
 		"declaration": true,
-		"outDir": "dist/esm/"
+		"outDir": "dist/esm/",
+		"skipLibCheck": true,
+		"paths": {
+			"vite": ["./node_modules/vite/dist/node/index.d.ts"],
+			"vite/*": ["./node_modules/vite/dist/node/*"]
+		}
 	},
 	"files": ["./src/index.ts"]
 }
