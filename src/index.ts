@@ -142,7 +142,6 @@ function preactPlugin({
 	babelOptions.parserOpts.plugins ||= [];
 
 	const useBabel = typeof babel !== "undefined";
-
 	const shouldTransform = createFilter(
 		include || [/\.[cm]?[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -163,16 +162,20 @@ function preactPlugin({
 		}
 	}
 
-	const jsxPlugin: Plugin = {
+	const jsxPlugin: Plugin & { meta?: { rolldownVersion?: string } } = {
 		name: "vite:preact-jsx",
 		enforce: "pre",
 		config() {
 			const jsxSource = jsxImportSource ?? "preact";
+			const useRolldown = this.meta ? "rolldownVersion" in this.meta : false;
 
-			const config: Record<string, any> = {
+			const isRolldown = useRolldown && !useBabel;
+			const isEsbuild = !useRolldown && !useBabel;
+
+			return {
 				build: {
 					rollupOptions: {
-						onwarn(warning: any, warn: any) {
+						onwarn(warning, warn) {
 							// Silence Rollup's module-level directive warnings re:"use client".
 							// They're likely to come from `node_modules` and won't be actionable.
 							if (
@@ -196,30 +199,31 @@ function preactPlugin({
 				},
 				optimizeDeps: {
 					include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
+					rolldownOptions: isRolldown
+						? {
+								transform: {
+									jsx: {
+										runtime: "automatic",
+									},
+								},
+						  }
+						: undefined,
 				},
+				oxc: isRolldown
+					? {
+							jsx: {
+								runtime: "automatic",
+								importSource: jsxSource,
+							},
+					  }
+					: undefined,
+				esbuild: isEsbuild
+					? {
+							jsx: "automatic",
+							jsxImportSource: jsxSource,
+					  }
+					: undefined,
 			};
-
-			if (useBabel) {
-				return config;
-			}
-
-			const useRolldown = this.meta ? "rolldownVersion" in this.meta : false;
-
-			if (useRolldown) {
-				config.oxc = {
-					jsx: { runtime: "automatic", importSource: jsxSource },
-				};
-				config.optimizeDeps.rolldownOptions = {
-					transform: { jsx: { runtime: "automatic" } },
-				};
-			} else {
-				config.esbuild = {
-					jsx: "automatic",
-					jsxImportSource: jsxSource,
-				};
-			}
-
-			return config;
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
