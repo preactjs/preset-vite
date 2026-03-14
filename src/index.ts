@@ -166,6 +166,13 @@ function preactPlugin({
 		name: "vite:preact-jsx",
 		enforce: "pre",
 		config() {
+			const supportsRolldown =
+				"meta" in this && this.meta && typeof this.meta === "object"
+					? "rolldownVersion" in this.meta
+					: false;
+			const shouldUseRolldown = supportsRolldown && !useBabel;
+			const shouldUseEsbuild = !shouldUseRolldown && !useBabel;
+			const shouldUseOxc = !!shouldUseRolldown;
 			return {
 				build: {
 					rollupOptions: {
@@ -191,14 +198,31 @@ function preactPlugin({
 						},
 					},
 				},
-				esbuild: useBabel
-					? undefined
-					: {
+				oxc: shouldUseOxc
+					? {
+							jsx: {
+								runtime: "automatic",
+								importSource: jsxImportSource ?? "preact",
+							},
+					  }
+					: undefined,
+				esbuild: shouldUseEsbuild
+					? {
 							jsx: "automatic",
 							jsxImportSource: jsxImportSource ?? "preact",
-					  },
+					  }
+					: undefined,
 				optimizeDeps: {
 					include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
+					rolldownOptions: shouldUseRolldown
+						? {
+								transform: {
+									jsx: {
+										runtime: "automatic",
+									},
+								},
+						  }
+						: undefined,
 				},
 			};
 		},
