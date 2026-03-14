@@ -15,6 +15,7 @@ import babelReactJsx from "@babel/plugin-transform-react-jsx";
 import babelReactJsxDev from "@babel/plugin-transform-react-jsx-development";
 // @ts-ignore package doesn't ship with declaration files
 import babelHookNames from "babel-plugin-transform-hook-names";
+import * as vite from 'vite';
 
 export type BabelOptions = Omit<
 	TransformOptions,
@@ -166,6 +167,43 @@ function preactPlugin({
 		name: "vite:preact-jsx",
 		enforce: "pre",
 		config() {
+			if ('rolldownVersion' in vite) {
+				return {
+					build: {
+						rolldownOptions: {
+							onwarn(warning, warn) {
+								// Silence Rollup's module-level directive warnings re:"use client".
+								// They're likely to come from `node_modules` and won't be actionable.
+								if (
+									warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+									warning.message.includes("use client")
+								)
+									return;
+								// ESBuild seemingly doesn't include mappings for directives, causing
+								// Rollup to emit warnings about missing source locations. This too is
+								// likely to come from `node_modules` and won't be actionable.
+								// evanw/esbuild#3548
+								if (
+									warning.code === "SOURCEMAP_ERROR" &&
+									warning.message.includes("resolve original location") &&
+									warning.pos === 0
+								)
+									return;
+								warn(warning);
+							},
+						},
+					},
+					oxc: useBabel
+						? undefined
+						: {
+								jsx: "automatic",
+								jsxImportSource: jsxImportSource ?? "preact",
+						},
+					optimizeDeps: {
+						include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
+					},
+				};
+			}
 			return {
 				build: {
 					rollupOptions: {
