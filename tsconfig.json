@@ -6,6 +6,7 @@
 		"module": "ESNext",
 		"moduleResolution": "Node",
 		"declaration": true,
+		"skipLibCheck": true,
 		"outDir": "dist/esm/"
 	},
 	"files": ["./src/index.ts"]

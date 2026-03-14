@@ -142,6 +142,7 @@ function preactPlugin({
 	babelOptions.parserOpts.plugins ||= [];
 
 	const useBabel = typeof babel !== "undefined";
+
 	const shouldTransform = createFilter(
 		include || [/\.[cm]?[tj]sx?$/],
 		exclude || [/node_modules/],
@@ -166,10 +167,12 @@ function preactPlugin({
 		name: "vite:preact-jsx",
 		enforce: "pre",
 		config() {
-			return {
+			const jsxSource = jsxImportSource ?? "preact";
+
+			const config: Record<string, any> = {
 				build: {
 					rollupOptions: {
-						onwarn(warning, warn) {
+						onwarn(warning: any, warn: any) {
 							// Silence Rollup's module-level directive warnings re:"use client".
 							// They're likely to come from `node_modules` and won't be actionable.
 							if (
@@ -191,16 +194,32 @@ function preactPlugin({
 						},
 					},
 				},
-				esbuild: useBabel
-					? undefined
-					: {
-							jsx: "automatic",
-							jsxImportSource: jsxImportSource ?? "preact",
-					  },
 				optimizeDeps: {
 					include: ["preact", "preact/jsx-runtime", "preact/jsx-dev-runtime"],
 				},
 			};
+
+			if (useBabel) {
+				return config;
+			}
+
+			const useRolldown = this.meta ? "rolldownVersion" in this.meta : false;
+
+			if (useRolldown) {
+				config.oxc = {
+					jsx: { runtime: "automatic", importSource: jsxSource },
+				};
+				config.optimizeDeps.rolldownOptions = {
+					transform: { jsx: { runtime: "automatic" } },
+				};
+			} else {
+				config.esbuild = {
+					jsx: "automatic",
+					jsxImportSource: jsxSource,
+				};
+			}
+
+			return config;
 		},
 		configResolved(resolvedConfig) {
 			config = resolvedConfig;
