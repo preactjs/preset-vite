@@ -167,7 +167,7 @@ function preactPlugin({
 		enforce: "pre",
 		config() {
 			const supportsRolldown =
-				"meta" in this && this.meta && typeof this.meta === "object"
+				this && "meta" in this && this.meta && typeof this.meta === "object"
 					? "rolldownVersion" in this.meta
 					: false;
 			const shouldUseRolldown = supportsRolldown && !useBabel;
