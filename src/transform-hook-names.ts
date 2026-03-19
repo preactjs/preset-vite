@@ -2,7 +2,6 @@ import { extractAssignedNames } from "@rollup/pluginutils";
 import type { Node, Program } from "estree";
 import MagicString from "magic-string";
 import type { Plugin } from "vite";
-import { walk } from "zimmerframe";
 
 import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
@@ -33,7 +32,7 @@ export function transformHookNamesPlugin({
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
 		},
-		transform(code, url) {
+		async transform(code, url) {
 			if (!devToolsEnabled) return;
 
 			const { id } = parseId(url);
@@ -52,6 +51,7 @@ export function transformHookNamesPlugin({
 
 			const s = new MagicString(code);
 			let hasHelper = false;
+			const { walk } = await import("zimmerframe"); // fix for cjs until sveltejs/zimmerframe#34 is accepted
 			walk<NodeWithRange, null>(ast, null, {
 				CallExpression(node, { path, next }) {
 					const callee = node.callee;
