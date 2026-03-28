@@ -26,6 +26,10 @@ export type BabelOptions = Omit<
 	| "inputSourceMap"
 >;
 
+export type JsxOptions = {
+	throwIfNamespace?: boolean;
+};
+
 export interface PreactPluginOptions {
 	/**
 	 * Inject devtools bridge in production bundle instead of only in development mode.
@@ -99,6 +103,10 @@ export interface PreactPluginOptions {
 	 * Import Source for jsx. Defaults to "preact".
 	 */
 	jsxImportSource?: string;
+	/**
+	 * Configuration applied to @babel/plugin-transform-react-jsx.
+	 */
+	jsxOpts?: JsxOptions;
 }
 
 export interface PreactBabelOptions extends BabelOptions {
@@ -140,6 +148,7 @@ function preactPlugin({
 	babelOptions.overrides ||= [];
 	babelOptions.parserOpts ||= {} as any;
 	babelOptions.parserOpts.plugins ||= [];
+	babelOptions.jsxOpts ||= {} as any;
 
 	const useBabel = typeof babel !== "undefined";
 	const shouldTransform = createFilter(
@@ -266,6 +275,7 @@ function preactPlugin({
 					[
 						config.isProduction ? babelReactJsx : babelReactJsxDev,
 						{
+							...config.jsxOpts,
 							runtime: "automatic",
 							importSource: jsxImportSource ?? "preact",
 						},
