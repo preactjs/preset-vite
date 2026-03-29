@@ -24,6 +24,7 @@
 	"keywords": [
 		"preact",
 		"vite",
+		"vite-plugin",
 		"vite-preset",
 		"preset"
 	],
