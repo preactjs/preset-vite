@@ -2,6 +2,7 @@ import { extractAssignedNames } from "@rollup/pluginutils";
 import type { Node, Program } from "estree";
 import MagicString from "magic-string";
 import type { Plugin } from "vite";
+import type { walk } from "zimmerframe";
 
 import type { RollupFilter } from "./utils.js";
 import { parseId } from "./utils.js";
@@ -9,6 +10,12 @@ import { parseId } from "./utils.js";
 const HOOK_IMPORTS = new Set(["preact/hooks", "preact/compat", "react"]);
 const HOOK_NAME_RE = /^(useState|useReducer|useRef|useMemo)$/;
 const FILTER_CODE_RE = /\buse(?:State|Reducer|Ref|Memo)\b/;
+// Keep zimmerframe loading as a native dynamic import even in the CommonJS build.
+// TypeScript rewrites `import()` to `require()` when compiling CJS, which breaks
+// for ESM-only dependencies when tools load this preset through `require()`.
+const importEsm = new Function("specifier", "return import(specifier)") as (
+	specifier: string,
+) => Promise<{ walk: typeof walk }>;
 
 type NodeWithRange<N extends Node = Node> = N & {
 	start: number;
@@ -51,7 +58,7 @@ export function transformHookNamesPlugin({
 
 			const s = new MagicString(code);
 			let hasHelper = false;
-			const { walk } = await import("zimmerframe"); // fix for cjs until sveltejs/zimmerframe#34 is accepted
+			const { walk } = await importEsm("zimmerframe");
 			walk<NodeWithRange, null>(ast, null, {
 				CallExpression(node, { path, next }) {
 					const callee = node.callee;
