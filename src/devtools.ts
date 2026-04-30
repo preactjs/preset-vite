@@ -17,6 +17,7 @@ export function preactDevtoolsPlugin({
 	devToolsEnabled,
 	shouldTransform,
 }: PreactDevtoolsPluginOptions): Plugin {
+	const name = "preact:devtools";
 	const log = debug("vite:preact-devtools");
 
 	let entry = "";
@@ -24,7 +25,7 @@ export function preactDevtoolsPlugin({
 	let found = false;
 
 	const plugin: Plugin = {
-		name: "preact:devtools",
+		name,
 
 		// Ensure that we resolve before everything else
 		enforce: "pre",
@@ -41,6 +42,20 @@ export function preactDevtoolsPlugin({
 			config = resolvedConfig;
 			devToolsEnabled =
 				devToolsEnabled ?? (!config.isProduction || devtoolsInProd);
+
+			// Whilst newer versions of Vite allow for hook filtering, we'd need to set the filter
+			// after the fact as we can only read `config.isProduction` here. And if we're setting
+			// the filter after the fact, well, we can just remove the plugin hooks entirely. Skips
+			// filtering altogether.
+			if (!devToolsEnabled) {
+				const devToolsPlugin = config.plugins.find(
+					(p: Plugin) => p.name === name,
+				);
+				if (devToolsPlugin) {
+					delete devToolsPlugin.resolveId;
+					delete devToolsPlugin.transform;
+				}
+			}
 		},
 
 		resolveId(url, importer = "") {
@@ -62,7 +77,7 @@ export function preactDevtoolsPlugin({
 		transform(code, url) {
 			const { id } = parseId(url);
 
-			if (entry === id && (!config.isProduction || devToolsEnabled)) {
+			if (entry === id) {
 				const source = config.isProduction ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
