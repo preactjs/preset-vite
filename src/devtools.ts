@@ -44,6 +44,7 @@ export function preactDevtoolsPlugin({
 		},
 
 		resolveId(url, importer = "") {
+			if (!devToolsEnabled) return;
 			const { id } = parseId(url);
 
 			// Get the main entry file to inject into
@@ -60,9 +61,10 @@ export function preactDevtoolsPlugin({
 		},
 
 		transform(code, url) {
+			if (!devToolsEnabled) return;
 			const { id } = parseId(url);
 
-			if (entry === id && (!config.isProduction || devToolsEnabled)) {
+			if (entry === id) {
 				const source = config.isProduction ? "preact/devtools" : "preact/debug";
 				code = `import "${source}";\n${code}`;
 
