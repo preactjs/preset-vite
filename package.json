@@ -38,11 +38,8 @@
 		"dist/"
 	],
 	"dependencies": {
-		"@babel/plugin-transform-react-jsx": "^7.27.1",
-		"@babel/plugin-transform-react-jsx-development": "^7.27.1",
 		"@prefresh/vite": "^2.4.11",
 		"@rollup/pluginutils": "^5.0.0",
-		"babel-plugin-transform-hook-names": "^1.0.2",
 		"debug": "^4.4.3",
 		"magic-string": "^0.30.21",
 		"picocolors": "^1.1.1",
@@ -51,10 +48,35 @@
 	},
 	"peerDependencies": {
 		"@babel/core": "7.x",
+		"@babel/parser": "^7.0.0",
+		"@babel/plugin-transform-react-jsx": "^7.0.0",
+		"@babel/plugin-transform-react-jsx-development": "^7.0.0",
+		"babel-plugin-transform-hook-names": "^1.0.0",
 		"vite": "2.x || 3.x || 4.x || 5.x || 6.x || 7.x || 8.x"
+	},
+	"peerDependenciesMeta": {
+		"@babel/core": {
+			"optional": true
+		},
+		"@babel/parser": {
+			"optional": true
+		},
+		"@babel/plugin-transform-react-jsx": {
+			"optional": true
+		},
+		"@babel/plugin-transform-react-jsx-development": {
+			"optional": true
+		},
+		"babel-plugin-transform-hook-names": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@babel/core": "^7.28.5",
+		"@babel/parser": "^7.28.5",
+		"@babel/plugin-transform-react-jsx": "^7.27.1",
+		"@babel/plugin-transform-react-jsx-development": "^7.27.1",
+		"babel-plugin-transform-hook-names": "^1.0.2",
 		"@types/babel__core": "^7.20.5",
 		"@types/debug": "^4.1.12",
 		"@types/estree": "^0.0.50",
