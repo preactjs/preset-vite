@@ -8,13 +8,43 @@ import { preactDevtoolsPlugin } from "./devtools.js";
 import { transformHookNamesPlugin } from "./transform-hook-names.js";
 import { createFilter, parseId } from "./utils.js";
 import { vitePrerenderPlugin } from "vite-prerender-plugin";
-import { transformAsync } from "@babel/core";
-// @ts-ignore package doesn't ship with declaration files
-import babelReactJsx from "@babel/plugin-transform-react-jsx";
-// @ts-ignore package doesn't ship with declaration files
-import babelReactJsxDev from "@babel/plugin-transform-react-jsx-development";
-// @ts-ignore package doesn't ship with declaration files
-import babelHookNames from "babel-plugin-transform-hook-names";
+
+type BabelDeps = {
+	transformAsync: typeof import("@babel/core").transformAsync;
+	babelReactJsx: any;
+	babelReactJsxDev: any;
+	babelHookNames: any;
+};
+
+let babelDepsPromise: Promise<BabelDeps> | null = null;
+
+function loadBabelDeps(): Promise<BabelDeps> {
+	return (babelDepsPromise ||= Promise.all([
+		import("@babel/core"),
+		// @ts-ignore package doesn't ship with declaration files
+		import("@babel/plugin-transform-react-jsx"),
+		// @ts-ignore package doesn't ship with declaration files
+		import("@babel/plugin-transform-react-jsx-development"),
+		// @ts-ignore package doesn't ship with declaration files
+		import("babel-plugin-transform-hook-names"),
+	])
+		.then(([core, jsx, jsxDev, hookNames]) => ({
+			transformAsync: core.transformAsync,
+			babelReactJsx: (jsx as any).default ?? jsx,
+			babelReactJsxDev: (jsxDev as any).default ?? jsxDev,
+			babelHookNames: (hookNames as any).default ?? hookNames,
+		}))
+		.catch(err => {
+			babelDepsPromise = null;
+			throw new Error(
+				"@preact/preset-vite: the `babel` option requires `@babel/core`, " +
+					"`@babel/plugin-transform-react-jsx`, " +
+					"`@babel/plugin-transform-react-jsx-development`, and " +
+					"`babel-plugin-transform-hook-names` to be installed.\n" +
+					`Underlying error: ${err instanceof Error ? err.message : err}`,
+			);
+		}));
+}
 
 export type BabelOptions = Omit<
 	TransformOptions,
@@ -236,6 +266,9 @@ function preactPlugin({
 			const { id } = parseId(url);
 
 			if (!useBabel || !shouldTransform(id)) return;
+
+			const { transformAsync, babelReactJsx, babelReactJsxDev, babelHookNames } =
+				await loadBabelDeps();
 
 			const parserPlugins = [
 				...baseParserOptions,
