@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: package.json
-          cache: npm
-          cache-dependency-path: package-lock.json
           registry-url: "https://registry.npmjs.org"
 
       - name: Update npm
@@ -84,8 +82,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
           registry-url: "https://registry.npmjs.org"
 
       - name: Update npm
