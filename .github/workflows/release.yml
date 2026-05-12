@@ -45,21 +45,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check whether this version still needs publishing
+      - name: Check for unpublished package versions
         if: steps.changesets.outputs.hasChangesets == 'false'
         id: publish-check
-        shell: bash
-        run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-
-          echo "Checking whether ${PACKAGE_NAME}@${PACKAGE_VERSION} is already on npm"
-          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "should_publish=true" >> "$GITHUB_OUTPUT"
+        run: node .github/scripts/has-unpublished-packages.mjs
 
   publish:
     name: Publish
