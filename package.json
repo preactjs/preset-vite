@@ -19,6 +19,7 @@
 		"dev:preview": "vite preview demo",
 		"build": "premove dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
 		"test": "premove demo/node_modules && node --test test",
+		"version": "changeset version && npm install --package-lock-only --ignore-scripts",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
@@ -37,6 +38,10 @@
 	"files": [
 		"dist/"
 	],
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
 	"dependencies": {
 		"@babel/plugin-transform-react-jsx": "^7.27.1",
 		"@babel/plugin-transform-react-jsx-development": "^7.27.1",
@@ -55,6 +60,7 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.28.5",
+		"@changesets/cli": "^2.27.1",
 		"@types/babel__core": "^7.20.5",
 		"@types/debug": "^4.1.12",
 		"@types/estree": "^0.0.50",
