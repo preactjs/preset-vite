@@ -1,35 +1,5 @@
 import { appendFileSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
-
-const ignoredDirectories = new Set([
-  ".git",
-  "dist",
-  "node_modules",
-]);
-
-async function findPackageManifests(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const manifests = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-
-    if (entry.isDirectory()) {
-      if (!ignoredDirectories.has(entry.name)) {
-        manifests.push(...await findPackageManifests(fullPath));
-      }
-    } else if (entry.isFile() && entry.name === "package.json") {
-      const pkg = JSON.parse(await readFile(fullPath, "utf8"));
-
-      if (!pkg.private && pkg.name && pkg.version) {
-        manifests.push({ name: pkg.name, version: pkg.version });
-      }
-    }
-  }
-
-  return manifests;
-}
+import { readFile } from "node:fs/promises";
 
 async function hasPublishedVersion(pkg) {
   const response = await fetch(
@@ -55,24 +25,19 @@ async function hasPublishedVersion(pkg) {
 }
 
 async function main() {
-  const packages = (await findPackageManifests(process.cwd()))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  let hasUnpublished = false;
+  const pkg = JSON.parse(await readFile("package.json", "utf8"));
+  const isPublished = await hasPublishedVersion(pkg);
 
-  for (const pkg of packages) {
-    const isPublished = await hasPublishedVersion(pkg);
-
-    if (isPublished) {
-      console.log(`${pkg.name}@${pkg.version} is already published`);
-    } else {
-      console.log(`${pkg.name}@${pkg.version} is not published yet`);
-      hasUnpublished = true;
-    }
+  if (isPublished) {
+    console.log(`${pkg.name}@${pkg.version} is already published`);
+  } else {
+    console.log(`${pkg.name}@${pkg.version} is not published yet`);
   }
 
+  const shouldPublish = !isPublished;
   const output = [
-    `has_unpublished=${String(hasUnpublished)}`,
-    `should_publish=${String(hasUnpublished)}`,
+    `has_unpublished=${String(shouldPublish)}`,
+    `should_publish=${String(shouldPublish)}`,
   ].join("\n") + "\n";
 
   if (process.env.GITHUB_OUTPUT) {
