@@ -87,7 +87,7 @@ jobs:
       - name: Publish packages
         uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
         with:
-          publish: node .github/scripts/stage-packages.mjs
+          publish: node .github/scripts/stage-package.mjs
           createGithubReleases: true
           commitMode: github-api
         env:
