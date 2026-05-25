@@ -7,6 +7,7 @@ const root = process.cwd();
 const config = JSON.parse(readFileSync(join(root, ".changeset/config.json"), "utf8"));
 const ignored = new Set(config.ignore || []);
 const access = config.access || "public";
+const isWorkspaceRelease = existsSync(join(root, "pnpm-workspace.yaml"));
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -138,7 +139,7 @@ for (const packageJsonPath of packageJsonPaths()) {
   if (result.status !== 0) process.exit(result.status || 1);
 
   const stageId = result.stdout.match(/"stageId"\s*:\s*"([^"]+)"/)?.[1];
-  const tagName = `${pkg.name}@${pkg.version}`;
+  const tagName = isWorkspaceRelease ? `${pkg.name}@${pkg.version}` : `v${pkg.version}`;
   createGitTag(tagName);
 
   staged.push({
