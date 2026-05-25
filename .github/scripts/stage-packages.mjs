@@ -70,6 +70,40 @@ function distTag(version) {
   return prerelease ? prerelease[1] : "latest";
 }
 
+function runGit(args) {
+  const result = spawnSync("git", args, {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  process.stdout.write(result.stdout);
+  process.stderr.write(result.stderr);
+  if (result.status !== 0) process.exit(result.status || 1);
+}
+
+function hasLocalGitTag(tagName) {
+  const result = spawnSync(
+    "git",
+    ["rev-parse", "--verify", "--quiet", `refs/tags/${tagName}`],
+    {
+      cwd: root,
+      stdio: "ignore",
+    }
+  );
+  return result.status === 0;
+}
+
+function createGitTag(tagName) {
+  if (hasLocalGitTag(tagName)) {
+    console.log(`Git tag ${tagName} already exists locally.`);
+  } else {
+    runGit(["tag", tagName, "-m", tagName]);
+  }
+
+  // changesets/action parses this line, then pushes the tag and creates the GitHub release.
+  console.log(`New tag: ${tagName}`);
+}
+
 const staged = [];
 for (const packageJsonPath of packageJsonPaths()) {
   const pkg = readJson(packageJsonPath);
@@ -104,6 +138,9 @@ for (const packageJsonPath of packageJsonPaths()) {
   if (result.status !== 0) process.exit(result.status || 1);
 
   const stageId = result.stdout.match(/"stageId"\s*:\s*"([^"]+)"/)?.[1];
+  const tagName = `${pkg.name}@${pkg.version}`;
+  createGitTag(tagName);
+
   staged.push({
     name: pkg.name,
     version: pkg.version,
