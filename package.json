@@ -18,7 +18,7 @@
 		"dev:build": "vite build demo",
 		"dev:preview": "vite preview demo",
 		"build": "premove dist && tsc && tsc -p tsconfig.cjs.json && node tools/postbuild.mjs",
-		"test": "premove demo/node_modules && node --test test",
+		"test": "premove demo/node_modules && node --test",
 		"version": "changeset version && npm install --package-lock-only --ignore-scripts",
 		"prepublishOnly": "npm run build"
 	},
@@ -90,6 +90,6 @@
 		"trailingComma": "all"
 	},
 	"volta": {
-		"node": "20.19.6"
+		"node": "24.18.0"
 	}
 }
