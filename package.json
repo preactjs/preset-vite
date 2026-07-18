@@ -90,6 +90,6 @@
 		"trailingComma": "all"
 	},
 	"volta": {
-		"node": "20.19.6"
+		"node": "24.18.0"
 	}
 }
